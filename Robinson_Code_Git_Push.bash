@@ -18,7 +18,7 @@ then
    git status
    
    echo " "
-   read -p "Would you like to commit all added files to git? (y/n) " commit
+   read -p "Would you like to commit and push all added files to git? (y/n) " commit
    if [ $commit == "y" ] 
    then
       read -p "Commit Message: " msg

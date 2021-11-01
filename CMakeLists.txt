@@ -12,8 +12,8 @@ find_package(catkin
   trajectory_msgs
   cv_bridge
   dynamic_reconfigure
-  baxter_core_msgs
-  baxter_interface
+  #baxter_core_msgs
+  #baxter_interface
 )
 
 catkin_python_setup()
@@ -32,8 +32,8 @@ catkin_package(
   trajectory_msgs
   cv_bridge
   dynamic_reconfigure
-  baxter_core_msgs
-  baxter_interface
+  #baxter_core_msgs
+  #baxter_interface
 )
 
 install(
@@ -47,6 +47,8 @@ install(
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
   USE_SOURCE_PERMISSIONS
 )
+
+add_executable(tester src/cpp_test.cpp)
 
 install(
   DIRECTORY share/

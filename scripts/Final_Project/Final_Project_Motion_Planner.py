@@ -4,6 +4,8 @@ import numpy as np
 import math as m
 import matplotlib.pyplot as plt
 
+import csv
+
 from Motion_Planner import Motion_Planner
 from manipdkin_specified_point import manipdkin_specified_point as mdkp
 

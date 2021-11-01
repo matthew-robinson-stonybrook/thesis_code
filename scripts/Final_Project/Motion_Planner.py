@@ -64,6 +64,7 @@ class Motion_Planner(Quat_Math):
         self.config = self.config_prime
 
         A0Af = self.dual_quat_product(self.dual_conjugate(self.A0), self.Af)
+        print(A0Af)
         thetai = 2 * np.arccos(A0Af[0,0])
         pi = self.dual_quat_to_p(A0Af)
         pi = m.sqrt(pi[0]**2 + pi[1]**2 + pi[2]**2)
@@ -83,7 +84,6 @@ class Motion_Planner(Quat_Math):
         if self.tau >= 0.2:
             self.tau = 0.2
 
-        print("POOP: " + str(self.tau))
 
     def spatial_manip_jac(self, thetas):
         n = len(self.axis_joints)

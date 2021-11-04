@@ -15,14 +15,24 @@ class Spatial_Jacobian {
       MatrixXd axis_joints;
       MatrixXd q_joints;
       MatrixXd thetas;
+      MatrixXd twists;
 
       Spatial_Jacobian(MatrixXd, MatrixXd, MatrixXd);
+      void calculate_twists();
 };
 
 Spatial_Jacobian::Spatial_Jacobian(MatrixXd ajs, MatrixXd qjs, MatrixXd ts){
    axis_joints = ajs;
    q_joints = qjs;
    thetas = ts;
+}
+
+void Spatial_Jacobian::calculate_twists(){
+   int joints = axis_joints.rows();
+   twists.resize(joints, 6);
+   //for (int joint; joint < joints; joint++) {
+      
+   //}
 }
    
 

@@ -2,15 +2,15 @@
 #include "spatial_jacobian.h"
 #include "Baxter.h"
 
-//#include </home/matt_robinson/cpp_libraries/eigen-3.4.0/Eigen/Dense>
 #include "../../eigen-3.4.0/Eigen/Dense"
+
 using namespace std;
 using namespace Eigen;
 
 double pi = 3.14169265;
 
 int main() {
-   std::cout << "Hello World From Thesis_Code" << std::endl;
+   cout << "Hello World From Thesis_Code" << endl;
    
    Baxter baxter;
    Spatial_Jacobian test_jacobian(baxter.axis_joints, baxter.q_joints, baxter.thetas);
@@ -18,6 +18,10 @@ int main() {
    cout << "axis_joints =  \n" << test_jacobian.axis_joints << endl;
    cout << "q_joints =  \n" << test_jacobian.q_joints << endl;
    cout << "thetas =  \n" << test_jacobian.thetas << endl;
-
+   
+   test_jacobian.calculate_twists();
+   
+   cout << "Twists = \n" << test_jacobian.twists << endl;
+   
    return 0;
 }

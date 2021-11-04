@@ -4,23 +4,26 @@
 #include<iostream>
 #include<vector>
 
-#include </home/matt_robinson/cpp_libraries/eigen-3.4.0/Eigen/Dense>
+#include "../../eigen-3.4.0/Eigen/Dense"
 
 using namespace std;
 using namespace Eigen;
 
 //spatial jacobian
 class Spatial_Jacobian {
-   private:
-      MatrixXf axis_joints(6,7);
-      
-   
    public:
-      MatrixXf return_axis_joints();
+      MatrixXd axis_joints;
+      MatrixXd q_joints;
+      MatrixXd thetas;
+
+      Spatial_Jacobian(MatrixXd, MatrixXd, MatrixXd);
 };
 
-MatrixXf Spatial_Jacobian::return_axis_joints(){
-   return axis_joints;
+Spatial_Jacobian::Spatial_Jacobian(MatrixXd ajs, MatrixXd qjs, MatrixXd ts){
+   axis_joints = ajs;
+   q_joints = qjs;
+   thetas = ts;
 }
+   
 
 #endif

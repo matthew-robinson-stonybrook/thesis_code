@@ -30,9 +30,25 @@ Spatial_Jacobian::Spatial_Jacobian(MatrixXd ajs, MatrixXd qjs, MatrixXd ts){
 void Spatial_Jacobian::calculate_twists(){
    int joints = axis_joints.rows();
    twists.resize(joints, 6);
-   //for (int joint; joint < joints; joint++) {
+   
+   Vector3d cross;
+   Vector3d uj;
+   Vector3d qj;
+   int t;
+   
+   for (int joint = 0; joint < joints; joint++) {
+      uj = axis_joints.row(joint);
+      qj = q_joints.row(joint);
+      cross = (-1 * uj).cross(qj);
       
-   //}
+      twists(joint, 0) = cross(0);
+      twists(joint, 1) = cross(1);
+      twists(joint, 2) = cross(2);
+      twists(joint, 3) = uj(0);
+      twists(joint, 4) = uj(1);
+      twists(joint, 5) = uj(2);
+
+   }
 }
    
 

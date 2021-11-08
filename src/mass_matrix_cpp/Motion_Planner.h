@@ -22,15 +22,15 @@ class Motion_Planner {
       MatrixXd q_joints;
       MatrixXd thetas;
 
-      Motion_Planner();
-      Motion_Planner(MatrixXd, MatrixXd, MatrixXd, MatrixXd, MatrixXd, MatrixXd, MatrixXd);
+      void Motion_Planner();
+      void Motion_Planner(MatrixXd, MatrixXd, MatrixXd, MatrixXd, MatrixXd, MatrixXd, MatrixXd);
 };
 
 Motion_Planner::Motion_Planner(){
    return 0;
 }
 
-Motion_Planner::Motion_Planner(MatrixXd g0, MatrixXd gi, MatrixXd configi, MatrixXd gf,MatrixXd ajs, MatrixXd qjs, MatrixXd ts, MatrixXd){
+void Motion_Planner::Motion_Planner(MatrixXd g0, MatrixXd gi, MatrixXd configi, MatrixXd gf,MatrixXd ajs, MatrixXd qjs, MatrixXd ts, MatrixXd){
    gst0 = g0;
    g_init = gi;
    config_init = configi;
@@ -39,6 +39,7 @@ Motion_Planner::Motion_Planner(MatrixXd g0, MatrixXd gi, MatrixXd configi, Matri
    q_joints = qjs;
    thetas = ts;
 }
+
    
 
 #endif

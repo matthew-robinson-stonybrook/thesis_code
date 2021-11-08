@@ -9,6 +9,8 @@ using namespace Eigen;
 
 double pi = 3.14169265;
 
+Matrix3d eye3;
+
 int main() {
    cout << "Hello World From Thesis_Code" << endl;
    
@@ -22,8 +24,6 @@ int main() {
    test_jacobian.calculate_twists();
    
    cout << "Twists = \n" << test_jacobian.twists << endl;
-   
-   
    
    return 0;
 }

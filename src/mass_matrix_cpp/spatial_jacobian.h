@@ -9,6 +9,9 @@
 using namespace std;
 using namespace Eigen;
 
+using namespace std;
+using namespace Eigen;
+
 //spatial jacobian
 class Spatial_Jacobian {
    public:

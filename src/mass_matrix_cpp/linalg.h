@@ -8,9 +8,22 @@
 
 using namespace std;
 using namespace Eigen;
-
+   
 namespace linalg {
-   Matrix3d eye3;
+   Matrix3d eye3 {
+   {1, 0, 0},
+   {0, 1, 0},
+   {0, 0, 1}
+   };
+   
+   Matrix3d skew3(Vector3d vec3) {
+      Matrix3d s3 {
+      {0, -vec3(2), vec3(1)},
+      {vec3(2), 0, -vec3(0)},
+      {-vec3(1), vec3(0), 0}
+      };
+      return s3;
+   }
 
 }
 

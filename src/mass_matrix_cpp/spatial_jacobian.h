@@ -19,6 +19,8 @@ class Spatial_Jacobian {
       MatrixXd q_joints;
       MatrixXd thetas;
       MatrixXd twists;
+      
+      
 
       Spatial_Jacobian(MatrixXd, MatrixXd, MatrixXd);
       void calculate_twists();

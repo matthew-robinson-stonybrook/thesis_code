@@ -3,11 +3,10 @@
 
 #include<iostream>
 #include<vector>
+#include "transformation.h"
 
+#include "linalg.h"
 #include "../../eigen-3.4.0/Eigen/Dense"
-
-using namespace std;
-using namespace Eigen;
 
 using namespace std;
 using namespace Eigen;
@@ -20,10 +19,12 @@ class Spatial_Jacobian {
       MatrixXd thetas;
       MatrixXd twists;
       
+      MatrixXd spatial_jacobian;
       
 
       Spatial_Jacobian(MatrixXd, MatrixXd, MatrixXd);
       void calculate_twists();
+      MatrixXd calculate_jacobian();
 };
 
 Spatial_Jacobian::Spatial_Jacobian(MatrixXd ajs, MatrixXd qjs, MatrixXd ts){
@@ -54,6 +55,27 @@ void Spatial_Jacobian::calculate_twists(){
       twists(joint, 5) = uj(2);
 
    }
+}
+
+MatrixXd Spatial_Jacobian::calculate_jacobian() {
+   int joints = axis_joints.rows();
+   spatial_jacobian.resize(6, joints);
+   Matrix4d g1_is [joints + 1];
+   *(g1_is) = linalg::eye4;
+   for (int joint = {0}; joint < joints; joint++) {
+      Matrix<double, 6, 1> joint_twist = twists.row(joint);
+      double joint_theta = thetas(joint);
+      *(g1_is + joint + 1) = *(g1_is + joint) * g::twist(joint_twist, joint_theta);
+      Matrix<double, 6, 1> twist_prime = g::adjoint(*(g1_is + joint)) * joint_twist;
+      
+      spatial_jacobian(0, joint) = twist_prime(0);
+      spatial_jacobian(1, joint) = twist_prime(1);
+      spatial_jacobian(2, joint) = twist_prime(2);
+      spatial_jacobian(3, joint) = twist_prime(3);
+      spatial_jacobian(4, joint) = twist_prime(4);
+      spatial_jacobian(5, joint) = twist_prime(5);
+   }
+   return spatial_jacobian;
 }
    
 

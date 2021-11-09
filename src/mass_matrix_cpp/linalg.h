@@ -16,6 +16,13 @@ namespace linalg {
    {0, 0, 1}
    };
    
+   Matrix4d eye4 {
+   {1, 0, 0, 0},
+   {0, 1, 0, 0},
+   {0, 0, 1, 0},
+   {0, 0, 0, 1},
+   };
+   
    Matrix3d skew3(Vector3d vec3) {
       Matrix3d s3 {
       {0, -vec3(2), vec3(1)},

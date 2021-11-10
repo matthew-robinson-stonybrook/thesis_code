@@ -15,13 +15,10 @@ const double pi = 3.14159265;
 int main() {	
    cout << "Hello World From Thesis_Code" << endl;
    
+   
    Baxter baxter;
    Matrix<double, 7, 1> thetas {pi/4, 1, 2, 1, 2, 1, 2};
    Spatial_Jacobian jac(baxter.axis_joints, baxter.q_joints, thetas);
-   
-   cout << "axis_joints =  \n" << jac.axis_joints << endl;
-   cout << "q_joints =  \n" << jac.q_joints << endl;
-   cout << "thetas =  \n" << jac.thetas << endl;
    
    jac.calculate_twists();
    

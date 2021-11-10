@@ -1,0 +1,8 @@
+<body name =...>
+  <asdfaf>
+</body>
+
+<joint name="right_torso" type="fixed"> 
+  <origin ryp="0 0 -0.7854" xyz"0 0 0"/>
+</joint>
+

@@ -116,6 +116,7 @@ class Baxter {
       // Link and motor masses
       vector <double> mls {10, 10, 10, 10, 10, 10, 10};  
       vector <double> mms {10, 10, 10, 10, 10, 10, 10};  
+      vector <double> krs {1, 1, 1, 1, 1, 1, 1};
                 
       Matrix<double, 1, 7> thetas {0, 0, 0, 0, 0, 0, 0};
    

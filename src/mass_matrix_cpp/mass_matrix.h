@@ -127,7 +127,7 @@ void Mass_Matrix::calculate_link_Jacs() {
       linki_oJac.resize(3,joints);
    
       // matrix isnt zeros after resize method for some reason idrk
-      // zero out new pos jacobian for link i 
+      // zero out new jacobians for link i 
       for (int i = 0; i < joints; i++) {
          linki_pJac(0, i) = 0;
          linki_pJac(1,i) = 0;
@@ -141,7 +141,7 @@ void Mass_Matrix::calculate_link_Jacs() {
      Vector4d pl_init {pls(link-1, 0), pls(link-1, 1), pls(link-1, 2), 1};
      
       // Transforms it using g matrices calculated in 'calculate_jacobian'
-      // Link should only be transformed from joints/gs up to joint (n-1)
+      // Link should only be transformed from joints/gs up to joint (n)
       Vector4d pl_hom = g_joints.at(link) * pl_init;
    
       // Calculate transformed joint vector similar to link vector above
@@ -188,7 +188,7 @@ void Mass_Matrix::calculate_actuator_Jacs() {
       actuatori_oJac.resize(3,joints);
    
       // matrix isnt zeros after resize method for some reason idrk
-      // zero out new pos jacobian for link i 
+      // zero out new jacobians for link i 
       for (int i = 0; i < joints; i++) {
          actuatori_pJac(0, i) = 0;
          actuatori_pJac(1,i) = 0;
@@ -198,15 +198,15 @@ void Mass_Matrix::calculate_actuator_Jacs() {
          actuatori_oJac(2,i) = 0;
       }
    
-      // Create homog vector of initial link position 
+      // Create homog vector of initial actuator position 
      Vector4d qj_init {qjs(act, 0), qjs(act, 1), qjs(act, 2), 1};
      
       // Transforms it using g matrices calculated in 'calculate_jacobian'
-      // Link should only be transformed from joints/gs up to joint (n-1)
-      Vector4d qj_hom = g_joints.at(act + 1) * qj_init;
+      // motor should only be transformed from joints/gs up to joint (n-1)
+      Vector4d qj_hom = g_joints.at(act) * qj_init;
    
       // Calculate transformed joint vector similar to link vector above
-      // Find difference between link and joint vectors (pli-pj-1)
+      // Find difference between joint i and joint (j-1) vectors (pi-pj-1)
       // Find transformed joint axis
       // Find cross between joint axis and pos vector (zj-1 x (pli - pj-1))
       // Set as column of jacobian
@@ -227,6 +227,12 @@ void Mass_Matrix::calculate_actuator_Jacs() {
          actuatori_oJac(1,col) =  wj(1);
          actuatori_oJac(2,col) =  wj(2);               
       }
+      
+      // The last non-zero column (column i)of the orientation jac 
+      // for the motor must be kri * zmi
+      actuatori_oJac(0,act) =  baxter.krs.at(act) * wj(0);
+      actuatori_oJac(1,act) =  baxter.krs.at(act) * wj(1);
+      actuatori_oJac(2,act) =  baxter.krs.at(act) * wj(2); 
       
       actuator_pJacs.push_back(actuatori_pJac);
       actuator_oJacs.push_back(actuatori_oJac);
@@ -258,12 +264,27 @@ void Mass_Matrix::calculate_mass_matrix() {
       }
    }
    
-   // need to be .at(i)
+   calculate_twists();
+   calculate_jacobian();
+   calculate_link_Jacs();
+   calculate_actuator_Jacs();
+   calculate_link_rots();
+  
+   
    for (int i{0}; i < joints; i++) {
-      mass_matrix += baxter.mls(i) * link_pJacs(i).transpose() * link_pJacs(i);
-      mass_matrix += link_oJacs(i).transpose() * actuator_rots(i) * baxter.Ils(i) * actuator_rots(i).transpose() * link_oJacs(i);
+      // Add the link mass component
+      mass_matrix += baxter.mls.at(i) * link_pJacs.at(i).transpose() * link_pJacs.at(i);
+      // Add the link inertia component
+      mass_matrix += link_oJacs.at(i).transpose() * link_rots.at(i) * baxter.Ils.at(i) * link_rots.at(i).transpose() * link_oJacs.at(i);
+      
+      // Add the motor mass component
+      mass_matrix += baxter.mms.at(i) * actuator_pJacs.at(i).transpose() * actuator_pJacs.at(i);
+      // Add the motor inertia component
+      mass_matrix += actuator_oJacs.at(i).transpose() * actuator_rots.at(i) * baxter.Ims.at(i) * actuator_rots.at(i).transpose() * actuator_oJacs.at(i);
    }
+   
 }
+
    
 
 #endif

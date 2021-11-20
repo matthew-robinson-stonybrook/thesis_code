@@ -15,11 +15,10 @@ using namespace Eigen;
 //spatial jacobian
 class Mass_Matrix {
    public:
-      Baxter baxter;
+      Baxter *baxter;
       int joints;
       MatrixXd axis_joints;
       MatrixXd q_joints;
-      MatrixXd thetas;
       MatrixXd twists;
 
       MatrixXd spatial_jacobian;
@@ -35,7 +34,7 @@ class Mass_Matrix {
       vector <MatrixXd> actuator_oJacs;
       vector <Matrix3d> actuator_rots;   
 
-      Mass_Matrix(Baxter);
+      Mass_Matrix(Baxter*);
       
       void calculate_twists();
       void calculate_jacobian();
@@ -49,13 +48,12 @@ class Mass_Matrix {
       void calculate_mass_matrix();
 };
 
-Mass_Matrix::Mass_Matrix(Baxter manip) : baxter{manip} {
-   joints = baxter.joints;
-   axis_joints = baxter.axis_joints;
-   q_joints = baxter.q_joints;
-   thetas = baxter.thetas;
-   spatial_jacobian.resize(6, baxter.joints);
-   mass_matrix.resize(baxter.joints, baxter.joints);
+Mass_Matrix::Mass_Matrix(Baxter* manip) : baxter{manip} {
+   joints = baxter->joints;
+   axis_joints = baxter->axis_joints;
+   q_joints = baxter->q_joints;
+   spatial_jacobian.resize(6, baxter->joints);
+   mass_matrix.resize(baxter->joints, baxter->joints);
    
 }
 
@@ -93,7 +91,7 @@ void Mass_Matrix::calculate_jacobian() {
    // Create transofmration matrices for adjoint to transform twists
    for (int joint = {0}; joint < joints; joint++) {
       Matrix<double, 6, 1> joint_twist = twists.row(joint);
-      double joint_theta = thetas(joint);
+      double joint_theta = baxter->thetas(joint);
       g_joints.push_back(g_joints.at(joint) * g::twist(joint_twist, joint_theta));
       Matrix<double, 6, 1> twist_prime = g::adjoint(g_joints.at(joint)) * joint_twist;
 
@@ -116,9 +114,9 @@ void Mass_Matrix::calculate_link_Jacs() {
    // Therefore links will range from 1-7, joints from 0-6
    for (int link{1}; link <= joints; link++) {
       // Copy link position vectors and joint position/orientation vectors
-      Matrix<double, 7, 3> pls = baxter.p_links;
-      Matrix<double, 7, 3> qjs = baxter.q_joints;
-      Matrix<double, 7, 3> ajs = baxter.axis_joints;
+      Matrix<double, 7, 3> pls = baxter->p_links;
+      Matrix<double, 7, 3> qjs = baxter->q_joints;
+      Matrix<double, 7, 3> ajs = baxter->axis_joints;
    
       // Initialize jacobian for link i and resize it
       MatrixXd linki_pJac;
@@ -178,8 +176,8 @@ void Mass_Matrix::calculate_actuator_Jacs() {
 
    for (int act{0}; act < joints; act++) {
       // Copy actuator position/orientation vectors
-      Matrix<double, 7, 3> qjs = baxter.q_joints;
-      Matrix<double, 7, 3> ajs = baxter.axis_joints;
+      Matrix<double, 7, 3> qjs = baxter->q_joints;
+      Matrix<double, 7, 3> ajs = baxter->axis_joints;
    
       // Initialize jacobian for link i and resize it
       MatrixXd actuatori_pJac;
@@ -230,9 +228,9 @@ void Mass_Matrix::calculate_actuator_Jacs() {
       
       // The last non-zero column (column i)of the orientation jac 
       // for the motor must be kri * zmi
-      actuatori_oJac(0,act) =  baxter.krs.at(act) * wj(0);
-      actuatori_oJac(1,act) =  baxter.krs.at(act) * wj(1);
-      actuatori_oJac(2,act) =  baxter.krs.at(act) * wj(2); 
+      actuatori_oJac(0,act) =  baxter->krs.at(act) * spatial_jacobian(3, act);
+      actuatori_oJac(1,act) =  baxter->krs.at(act) * spatial_jacobian(4, act);
+      actuatori_oJac(2,act) =  baxter->krs.at(act) * spatial_jacobian(5, act);
       
       actuator_pJacs.push_back(actuatori_pJac);
       actuator_oJacs.push_back(actuatori_oJac);
@@ -273,14 +271,14 @@ void Mass_Matrix::calculate_mass_matrix() {
    
    for (int i{0}; i < joints; i++) {
       // Add the link mass component
-      mass_matrix += baxter.mls.at(i) * link_pJacs.at(i).transpose() * link_pJacs.at(i);
+      mass_matrix += baxter->mls.at(i) * link_pJacs.at(i).transpose() * link_pJacs.at(i);
       // Add the link inertia component
-      mass_matrix += link_oJacs.at(i).transpose() * link_rots.at(i) * baxter.Ils.at(i) * link_rots.at(i).transpose() * link_oJacs.at(i);
+      mass_matrix += link_oJacs.at(i).transpose() * link_rots.at(i) * baxter->Ils.at(i) * link_rots.at(i).transpose() * link_oJacs.at(i);
       
       // Add the motor mass component
-      mass_matrix += baxter.mms.at(i) * actuator_pJacs.at(i).transpose() * actuator_pJacs.at(i);
+      mass_matrix += baxter->mms.at(i) * actuator_pJacs.at(i).transpose() * actuator_pJacs.at(i);
       // Add the motor inertia component
-      mass_matrix += actuator_oJacs.at(i).transpose() * actuator_rots.at(i) * baxter.Ims.at(i) * actuator_rots.at(i).transpose() * actuator_oJacs.at(i);
+      mass_matrix += actuator_oJacs.at(i).transpose() * actuator_rots.at(i) * baxter->Ims.at(i) * actuator_rots.at(i).transpose() * actuator_oJacs.at(i);
    }
    
 }

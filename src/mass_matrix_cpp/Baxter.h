@@ -151,6 +151,16 @@ class Baxter {
          {(l1 + l2 + l4 + l7/2) * cos(pi/4), (l1 + l2 + l4 + l7/2) * sin(pi/4), l0-l3-l5}
       };
       
+      Matrix<double, 7, 3> p_motors {
+         {0, 0, 0},
+         {l1 * cos(pi/4), l1 * sin(pi/4), l0},
+         {(l1 + l2/4) * cos(pi/4), (l1 + l2/4) * sin(pi/4), l0},
+         {(l1 + l2) * cos(pi/4), (l1 + l2) * sin(pi/4), l0-l3},
+         {(l1 + l2 + l4/4) * cos(pi/4), (l1 + l2 + l4/4) * sin(pi/4), l0-l3},
+         {(l1 + l2 + l4) * cos(pi/4), (l1 + l2 + l4) * sin(pi/4), l0-l3-l5}, 
+         {(l1 + l2 + l4 + l7/4) * cos(pi/4), (l1 + l2 + l4 + l7/4) * sin(pi/4), l0-l3-l5}
+      };
+      
 
 };
 

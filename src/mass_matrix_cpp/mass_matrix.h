@@ -229,6 +229,11 @@ void Mass_Matrix::calculate_actuator_Jacs() {
          actuatori_oJac(2,col) =  wj(2);               
       }
       
+      // The final column should be 0, since COM is taken about joint axis
+      actuatori_pJac(0, act) = 0;
+      actuatori_pJac(1, act) = 0;
+      actuatori_pJac(2, act) = 0;
+      
       // The last non-zero column (column i)of the orientation jac 
       // for the motor must be kri * zmi
       actuatori_oJac(0,act) =  baxter->krs.at(act) * spatial_jacobian(3, act);

@@ -299,7 +299,6 @@ void Mass_Matrix::calculate_mass_matrix() {
    }
    
 }
-
    
 
 #endif

@@ -1,5 +1,6 @@
 #include<iostream>
 #include "mass_matrix.h"
+#include "mass_matrix2.h"
 #include "Baxter.h"
 #include "linalg.h"
 #include "transformation.h"
@@ -25,7 +26,9 @@ int main() {
    Mass_Matrix mass(baxter_ptr);
    
    mass.calculate_mass_matrix();
-
+   
+   Mass_Matrix2 mass2(baxter_ptr);
+   cout << mass2.calculate_link_Jac(2) << endl;
   
    return 0;
 }

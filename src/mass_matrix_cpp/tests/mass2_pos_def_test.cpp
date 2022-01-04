@@ -1,5 +1,5 @@
 #include<iostream>
-#include "../mass_matrix.h"
+#include "../mass_matrix2.h"
 #include "../Baxter.h"
 #include "../linalg.h"
 #include "../transformation.h"
@@ -22,7 +22,7 @@ int main() {
    baxter_ptr = &baxter;
    
    baxter_ptr->thetas = {pi/4, 0, pi/8, 0, pi/4, 0, 0};
-   Mass_Matrix mass(baxter_ptr);
+   Mass_Matrix2 mass(baxter_ptr);
    
    mass.calculate_mass_matrix();
    

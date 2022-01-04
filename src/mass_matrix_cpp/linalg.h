@@ -31,6 +31,44 @@ namespace linalg {
       };
       return s3;
    }
+   
+   Vector3d vec3_from_skew(Matrix3d skew3) {
+      Vector3d vec3 {-skew3(1,2), skew3(0,2), -skew3(0,1)};
+      return vec3;
+   }
+   
+   Matrix4d twist_skew(Matrix<double, 6, 1> twist) {
+      Vector3d v {twist(0), twist(1), twist(2)};
+      Vector3d w {twist(3), twist(4), twist(5)};
+      Matrix3d w_hat {skew3(w)};
+      
+      Matrix4d twist_hat {
+      {w_hat(0,0), w_hat(0,1), w_hat(0,2), v(0)},
+      {w_hat(1,0), w_hat(1,1), w_hat(1,2), v(1)},
+      {w_hat(2,0), w_hat(2,1), w_hat(2,2), v(2)},
+      {0, 0, 0, 0}
+      };
+      
+      return twist_hat;
+   }
+   
+   Matrix<double, 6, 1> twist_from_skew(Matrix4d twist_hat) {
+      Matrix3d w_hat {
+      {twist_hat(0,0), twist_hat(0,1), twist_hat(0,2)},
+      {twist_hat(1,0), twist_hat(1,1), twist_hat(1,2)},
+      {twist_hat(2,0), twist_hat(2,1), twist_hat(2,2)}
+      };
+      
+      Vector3d w {vec3_from_skew(w_hat)};
+      Matrix<double, 6, 1> twist {
+      twist_hat(0,3), 
+      twist_hat(1,3),
+      twist_hat(2,3),
+      w(0), w(1), w(2)
+      };
+      
+      return twist;
+   }
 
 }
 

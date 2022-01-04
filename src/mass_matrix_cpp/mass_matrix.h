@@ -290,12 +290,16 @@ void Mass_Matrix::calculate_mass_matrix() {
       // Add the link mass component
       mass_matrix += baxter->mls.at(i) * link_pJacs.at(i).transpose() * link_pJacs.at(i);
       // Add the link inertia component
-      mass_matrix += link_oJacs.at(i).transpose() * link_rots.at(i) * baxter->Ils.at(i) * link_rots.at(i).transpose() * link_oJacs.at(i);
       
+      //mass_matrix += link_oJacs.at(i).transpose() * link_rots.at(i) * baxter->Ils.at(i) * link_rots.at(i).transpose() * link_oJacs.at(i);
+      mass_matrix += link_oJacs.at(i).transpose() * baxter->Ils.at(i) * link_oJacs.at(i);
+      
+      /*
       // Add the motor mass component
       mass_matrix += baxter->mms.at(i) * actuator_pJacs.at(i).transpose() * actuator_pJacs.at(i);
       // Add the motor inertia component
       mass_matrix += actuator_oJacs.at(i).transpose() * actuator_rots.at(i) * baxter->Ims.at(i) * actuator_rots.at(i).transpose() * actuator_oJacs.at(i);
+      */
    }
    
 }

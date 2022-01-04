@@ -73,6 +73,16 @@ namespace g {
       
       return adjoint;
    }
+   
+  Matrix<double, 6, 1> lie_bracket(Matrix<double, 6, 1> s1, Matrix<double, 6, 1> s2) {
+      Matrix4d s1_skew {linalg::twist_skew(s1)};
+      Matrix4d s2_skew {linalg::twist_skew(s2)};
+      
+      Matrix4d twist_product_skew {s1_skew * s2_skew - s2_skew * s1_skew};
+      Matrix<double,6,1> twist_product {linalg::twist_from_skew(twist_product_skew)};
+      
+      return twist_product;
+   }
 }
 
 #endif

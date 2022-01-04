@@ -41,7 +41,7 @@ class Mass_Matrix2 {
       MatrixXd calculate_link_Jac(int);
       //MatrixXd calculate_actuator_Jac();
       void calculate_mass_matrix();
-      
+      MatrixXd calculate_mass_matrix2();
       /*
       void calculate_jacobian();
       void calculate_link_rots();
@@ -157,12 +157,26 @@ void Mass_Matrix2::calculate_mass_matrix() {
    MatrixXd jacobian;
    
    // Add link terms
-   
    for(int link{1}; link <= joints; link++) {
       gen_mass = calculate_generalized_mass(baxter->mls.at(link-1), baxter->Ils.at(link-1));
       jacobian = calculate_link_Jac(link);
       mass_matrix += jacobian.transpose() * gen_mass * jacobian;
    }
+}
+
+MatrixXd Mass_Matrix2::calculate_mass_matrix2() {
+   const int js {baxter->joints};
+   MatrixXd mass_matrix;
+   mass_matrix.resize(js,js);
+   for(int row {0}; row < js; row++) {
+      for(int col {0}; col < js; col++) {
+         int l = max(row,col);
+         
+      }
+   }
+   
+   
+   return mass_matrix;
    
 }
 #endif

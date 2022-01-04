@@ -7,7 +7,7 @@
 class Baxter {
    public:
       const double pi = 3.14159265;
-      int joints = 7;
+      const int joints = 7;
       
       double l0 = 270.35;
       double l1= 69;

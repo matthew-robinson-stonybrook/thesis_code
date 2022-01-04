@@ -47,12 +47,11 @@ int main() {
    cout << twist2_test << endl;
    cout << "Product " << endl;
    cout << twist_product << endl; 
-   /*
-   cout << "Mass 1 Mass matrix: " << endl;
-   cout << mass.mass_matrix << endl;
-   cout << " " << endl;
-   cout << "Mass 2: " << endl;
-   cout << mass2.mass_matrix << endl;
-   */
+   
+   MatrixXd m2_test = mass2.calculate_mass_matrix2();
+   cout << "Mass Matrix calc 2: " << endl;
+   cout << m2_test << endl;
+   
+   
    return 0;
 }

@@ -9,14 +9,14 @@ class Baxter {
       const double pi = 3.14159265;
       const int joints = 7;
       
-      double l0 = 270.35;
-      double l1= 69;
-      double l2 = 364.59;
-      double l3 = 69;
-      double l4 = 374.29;
-      double l5 = 10;
-      double l6 = 374.42;
-      double l7 = 229.53;
+      double l0 = 0.27035;
+      double l1= 0.069;
+      double l2 = 0.36459;
+      double l3 = 0.069;
+      double l4 = 0.37429;
+      double l5 = 0.010;
+      double l6 = 0.37442;
+      double l7 = 0.22953;
 
       double Il1xx = 0.0470910226;
       double Il1xy = -0.00614870039;
@@ -119,7 +119,7 @@ class Baxter {
       vector <double> krs {1, 1, 1, 1, 1, 1, 1};
                 
       Matrix<double, 1, 7> thetas {0, 0, 0, 0, 0, 0, 0};
-   
+      Matrix<double, 1, 7> theta_dots {0, 0, 0, 0, 0 ,0, 0};
    
       Matrix<double, 7, 3> axis_joints {
    	   {0, 0, 1}, 

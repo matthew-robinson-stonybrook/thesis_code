@@ -15,7 +15,7 @@ using namespace Eigen;
 namespace g {
 
    // Transformation matrix given axis vector, position vector to axis, and theta
-   Matrix4d axis(const Vector3d &axis_joint, const Vector3d &q_joint, const double &theta) {
+   Matrix4d axis(const Vector3d axis_joint, const Vector3d q_joint, const double theta) {
       Matrix3d skew = linalg::skew3(axis_joint);
       
       Matrix3d rot = linalg::eye3 + skew*sin(theta) + skew*skew * (1-cos(theta));
@@ -33,7 +33,7 @@ namespace g {
    }
    
    // Transformation matrix given twist vector and theta
-   Matrix4d twist(const Matrix<double, 6, 1> &twist, const double &theta) {
+   Matrix4d twist(const Matrix<double, 6, 1> twist, const double theta) {
       Vector3d v = {twist(0), twist(1), twist(2)};
       Vector3d w = {twist(3), twist(4), twist(5)};
       

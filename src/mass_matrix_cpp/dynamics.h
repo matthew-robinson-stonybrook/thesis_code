@@ -167,7 +167,6 @@ Matrix<double, 6, 6> Robot_Dynamics::calc_adjoint_ij(int i, int j) {
 
 // Make sure to run calc_link_adjusted_gmasss() before this
 void Robot_Dynamics::calc_mass_matrix() {
-   cout << "M3 " << endl;
    
    const int js {baxter_ptr->joints};
    

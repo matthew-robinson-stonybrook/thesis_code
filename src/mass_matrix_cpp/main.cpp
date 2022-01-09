@@ -23,22 +23,34 @@ int main() {
    Baxter baxter;
    baxter_ptr = &baxter;
    baxter_ptr->thetas = {pi/4, 0, pi/8, 0, pi/4, 0, 0};
+   //baxter_ptr->thetas = {pi/2, 0, 0, 0, 0, 0, 0};
    baxter_ptr->theta_dots = {pi/40, 0, pi/80, 0, pi/40, 0, 0};
-   
-   
-   //Mass_Matrix2 mass2(baxter_ptr);
-   //mass2.calculate_mass_matrix();
-   
    
    Robot_Dynamics baxter_dynamics(baxter_ptr);
    baxter_dynamics.calc_link_adjusted_gmasss();
    baxter_dynamics.calc_mass_matrix();
    baxter_dynamics.calc_coriolis_matrix();
    
-   /*
-   cout << "Robot Dynamics Mass Matrix: " << endl;
+   
+   
+   Matrix<double,7,1> theta_ddot {pi/16, 0, 0, 0, 0, 0, 0};
+   Matrix<double,7,1> tau1 = baxter_dynamics.mass_matrix * theta_ddot;
+   Matrix<double,7,1> tau2 = mass2.mass_matrix * theta_ddot;
+   
+   cout << "Mass Matrix: " << endl;
    cout << baxter_dynamics.mass_matrix << endl;
    cout << " " << endl;
+   cout << "Joint Accelerations: " << endl;
+   cout << theta_ddot << endl;
+   cout << " " << endl;
+   cout << "Resulting Joint Torques From Robot Dynamics: " << endl;
+   cout << tau1 << endl;
+   cout << " " << endl;
+   cout << "Resulting Joint Torques From Mass Matrix2: " << endl;
+   cout << tau2 << endl;
+   cout << " " << endl;
+   
+   /*
    cout << "Robot Dynamics Coriolis Matrtix " << endl;
    cout << baxter_dynamics.coriolis_matrix << endl;
    cout << " " << endl;
@@ -47,4 +59,5 @@ int main() {
    double ellapsed_us = ((clock() - tStart) * 1000000) / CLOCKS_PER_SEC;
    cout << "TIME: " << ellapsed_us << "s e-6" << endl;
    return 0;
+   
 }

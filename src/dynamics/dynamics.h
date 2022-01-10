@@ -24,6 +24,7 @@ class Robot_Dynamics {
       
       MatrixXd mass_matrix;
       MatrixXd coriolis_matrix;
+      double V;
 
       Robot_Dynamics(Baxter*);
       
@@ -40,9 +41,11 @@ class Robot_Dynamics {
       
       void calc_mass_matrix();
       void calc_coriolis_matrix();
+      void calc_potential_energy();
       
 };
 
+// Contructor
 Robot_Dynamics::Robot_Dynamics(Baxter* manip) : baxter_ptr{manip} {
    joints = baxter_ptr->joints;
    axis_joints = baxter_ptr->axis_joints;
@@ -54,6 +57,8 @@ Robot_Dynamics::Robot_Dynamics(Baxter* manip) : baxter_ptr{manip} {
    calc_link_gmasss();
 }
 
+// HAPPENS ONLY IN CONSTRUCTOR
+//Uses manipulator joint positions and orientation to calculate twist coordinates
 void Robot_Dynamics::calc_twist_coords(){
    twist_coords.resize(joints, 6);
    Vector3d cross;
@@ -76,6 +81,8 @@ void Robot_Dynamics::calc_twist_coords(){
    }
 }
 
+// HAPPENS ONLY IN CONTRUCTOR
+// Creates vector of general mass matrices for the links (Mi)
 void Robot_Dynamics::calc_link_gmasss() {
    link_gmasss.clear();
    
@@ -89,14 +96,17 @@ void Robot_Dynamics::calc_link_gmasss() {
    }
 }
 
+// Should be run before and dynamic matrices
+// Calculates adjusted mass matrices due to configuration 
 void Robot_Dynamics::calc_link_adjusted_gmasss() {
    link_adjusted_gmasss.clear();
    for(int j{0}; j < joints; j++) {
       Matrix<double,6,6> gmass = link_gmasss.at(j);
-      link_adjusted_gmasss.push_back(calc_adjusted_gmass(gmass, j+1));
+      link_adjusted_gmasss.push_back(calc_adjusted_gmass(gmass, j));
    }
 }
 
+// Should only be run in calc_gmasss() in contructor
 Matrix<double, 6, 6> Robot_Dynamics::calc_gmass(int mass, Matrix3d inertia) {
    Matrix<double, 6, 6> gen_mass;
    
@@ -119,14 +129,16 @@ Matrix<double, 6, 6> Robot_Dynamics::calc_gmass(int mass, Matrix3d inertia) {
    return gen_mass;
 }
 
+// Is run in calc_adjusted_gmasss() which gets all link adjusted general masses (Mi_hat)
 Matrix<double, 6, 6> Robot_Dynamics::calc_adjusted_gmass(Matrix<double, 6, 6> gmass, int link) {
    Matrix4d gsli0 = linalg::eye4;
+   // Calculate gljli for adjoint (product of twist exponentials)
    for(int joint{0}; joint < link; joint++) {
       double theta = baxter_ptr->thetas(joint);
       Matrix4d gj = g::twist(twist_coords.row(joint), theta);
       gsli0 = gsli0 * gj;
    }
-   MatrixXd p_link = baxter_ptr->p_links.row(link-1);
+   MatrixXd p_link = baxter_ptr->p_links.row(link);
    Matrix4d gsli = linalg::eye4;
    gsli(0, 3) = p_link(0);
    gsli(1, 3) = p_link(1);
@@ -140,6 +152,7 @@ Matrix<double, 6, 6> Robot_Dynamics::calc_adjusted_gmass(Matrix<double, 6, 6> gm
    return adjusted_gmass;
 }
 
+// Adjoint_ij for mass and coriolis matrix computations
 Matrix<double, 6, 6> Robot_Dynamics::calc_adjoint_ij(int i, int j) {
    Matrix<double, 6, 6> adjoint;
    Matrix4d g {linalg::eye4};
@@ -205,7 +218,7 @@ void Robot_Dynamics::calc_mass_matrix() {
    }
 }
 
-// Make sure to run calc_link_adjusted_gmasss() before this
+// Should (probably) only be run in calc_coriolis_matrix()
 double Robot_Dynamics::calc_partialM_partialT(const int i, const int j, const int k) {
    double partialM {0};
    const int js {baxter_ptr->joints};
@@ -241,6 +254,7 @@ double Robot_Dynamics::calc_partialM_partialT(const int i, const int j, const in
    return partialM;
 }
 
+// Should (probably) only be run in calc_coriolis_matrix()
 double Robot_Dynamics::calc_christoffel(const int i, const int j, const int k) {
    // Mij_k: Partial derivative or mass matrix element ij wrt to theta k
    double Mij_k = calc_partialM_partialT(i, j, k);
@@ -273,5 +287,28 @@ void Robot_Dynamics::calc_coriolis_matrix() {
       }
    }
 }
+
+void Robot_Dynamics::calc_potential_energy() {
+   V = 0;
+   double g = 9.81;
+   for(int link {0}; link < joints; link++) {
+      double m = baxter_ptr->mls.at(link);
+      MatrixXd p = baxter_ptr->p_links.row(link);
+      Matrix<double, 4, 1> p_link_hom {p(0), p(1), p(2), 1};
+      // Calculate total twist fromm preceding joints
+      Matrix4d gsli = linalg::eye4;
+      for(int joint{0}; joint < link; joint++) {
+         double t = baxter_ptr->thetas(joint);
+         gsli = gsli * g::twist(twist_coords.row(joint), t);
+      }
+      // Adjusted position of link due to twists
+      Matrix<double, 4, 1> p_link_theta = gsli * p_link_hom;
+      // Height is z-component
+      double h = p_link_theta(2);
+
+      V += m * g * h;
+   } 
+}
+
 
 #endif

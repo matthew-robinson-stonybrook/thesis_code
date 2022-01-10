@@ -158,7 +158,7 @@ MatrixXd Mass_Matrix2::calculate_link_Jac(int link) {
    }
    
    
-   MatrixXd p_link {baxter->p_links.row(link-1)};
+   MatrixXd p_link {baxter->p_links.row(link)};
    Matrix4d gsli;
    Matrix<double, 6, 1> ej_dagger;
    Matrix4d gj_hat {linalg::eye4};
@@ -200,8 +200,8 @@ void Mass_Matrix2::calculate_mass_matrix() {
    MatrixXd jacobian;
    
    // Add link terms
-   for(int link{1}; link <= joints; link++) {
-      gen_mass = calculate_generalized_mass(baxter->mls.at(link-1), baxter->Ils.at(link-1));
+   for(int link{0}; link < joints; link++) {
+      gen_mass = calculate_generalized_mass(baxter->mls.at(link), baxter->Ils.at(link));
       jacobian = calculate_link_Jac(link);
       mass_matrix += jacobian.transpose() * gen_mass * jacobian;
    }

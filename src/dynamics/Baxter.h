@@ -118,9 +118,10 @@ class Baxter {
       vector <double> mms {10, 10, 10, 10, 10, 10, 10};  
       vector <double> krs {1, 1, 1, 1, 1, 1, 1};
                 
-      Matrix<double, 1, 7> thetas {0, 0, 0, 0, 0, 0, 0};
-      Matrix<double, 1, 7> theta_dots {0, 0, 0, 0, 0 ,0, 0};
-   
+      Matrix<double, 7, 1> thetas {0, 0, 0, 0, 0, 0, 0};
+      Matrix<double, 7, 1> theta_dots {0, 0, 0, 0, 0, 0, 0};
+      Matrix<double, 7, 1> theta_ddots {0, 0, 0, 0, 0, 0, 0};
+      
       Matrix<double, 7, 3> axis_joints {
    	   {0, 0, 1}, 
    	   {-1 / sqrt(2), 1 / sqrt(2), 0},

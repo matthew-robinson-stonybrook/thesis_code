@@ -22,8 +22,7 @@ int main() {
    Baxter *baxter_ptr {nullptr};
    Baxter baxter;
    baxter_ptr = &baxter;
-   baxter_ptr->thetas = {pi/4, 0, pi/8, 0, pi/4, 0, 0};
-   baxter_ptr->thetas = {0, 0, 0, 0, 0, 0, 0};
+   baxter_ptr->thetas = {pi/2, -pi/8, pi/4, -pi/6, 0.1, 0.1, 0.1};
    baxter_ptr->theta_dots = {pi/40, 0, pi/80, 0, pi/40, 0, 0};
    
    Robot_Dynamics baxter_dynamics(baxter_ptr);
@@ -35,25 +34,9 @@ int main() {
    Mass_Matrix2 mass2(baxter_ptr);
    mass2.calculate_mass_matrix();
    
-   baxter_ptr->theta_ddots = {pi/16, 0, 0, 0, 0, 0, 0};
    Matrix<double,7,1> tau1 = baxter_dynamics.mass_matrix * baxter_ptr->theta_ddots;
    Matrix<double,7,1> tau2 = mass2.mass_matrix * baxter_ptr->theta_ddots;
    
-   cout << " " << endl;
-   cout << "Joints: " << endl;
-   cout << baxter_ptr->thetas << endl;
-   cout << "PE: " << baxter_dynamics.V << endl;
-
-   
-   baxter_ptr->thetas = {pi/2, 0, 0, 0, 0, 0, 0};
-   baxter_dynamics.calc_potential_energy();
-   cout << " " << endl;
-   cout << "Joints: " << endl;
-   cout << baxter_ptr->thetas << endl;
-   cout << "PE: " << baxter_dynamics.V << endl;
-   
-   baxter_ptr->thetas = {pi/2, -pi/8, 0, 0, 0, 0, 0};
-   baxter_dynamics.calc_potential_energy();
    cout << " " << endl;
    cout << "Joints: " << endl;
    cout << baxter_ptr->thetas << endl;
@@ -76,5 +59,4 @@ int main() {
    double ellapsed_us = ((clock() - tStart) * 1000000) / CLOCKS_PER_SEC;
    cout << "TIME: " << ellapsed_us << "s e-6" << endl;
    return 0;
-   
 }

@@ -305,7 +305,7 @@ void Robot_Dynamics::calc_potential_energy() {
       Matrix<double, 4, 1> p_link_theta = gsli * p_link_hom;
       // Height is z-component
       double h = p_link_theta(2);
-
+      cout << h << endl;
       V += m * g * h;
    } 
 }

@@ -114,7 +114,7 @@ class Baxter {
       vector <Matrix3d> Ims {Il1, Il2, Il3, Il4, Il5, Il6, Il7};
       
       // Link and motor masses
-      vector <double> mls {10, 10, 10, 10, 10, 10, 10};  
+      vector <double> mls {5.700440, 3.226980, 4.312720, 2.072060, 2.246650, 1.609790, 0.35093+0.191250};  
       vector <double> mms {10, 10, 10, 10, 10, 10, 10};  
       vector <double> krs {1, 1, 1, 1, 1, 1, 1};
                 

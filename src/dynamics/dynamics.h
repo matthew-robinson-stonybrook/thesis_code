@@ -25,6 +25,7 @@ class Robot_Dynamics {
       MatrixXd mass_matrix;
       MatrixXd coriolis_matrix;
       double V;
+      double T;
 
       Robot_Dynamics(Baxter*);
       
@@ -42,6 +43,9 @@ class Robot_Dynamics {
       void calc_mass_matrix();
       void calc_coriolis_matrix();
       void calc_potential_energy();
+      void calc_kinetic_energy();
+      
+      void calc_theta_ddot();
       
 };
 
@@ -305,10 +309,19 @@ void Robot_Dynamics::calc_potential_energy() {
       Matrix<double, 4, 1> p_link_theta = gsli * p_link_hom;
       // Height is z-component
       double h = p_link_theta(2);
-      cout << h << endl;
       V += m * g * h;
    } 
 }
 
+void Robot_Dynamics::calc_kinetic_energy() {
+   T = (baxter_ptr->theta_dots.transpose() * mass_matrix * baxter_ptr->theta_dots);
+   T /= 2;
+}
+
+void Robot_Dynamics::calc_theta_ddot() {
+   MatrixXd mass_inv = mass_matrix.inverse();
+   MatrixXd tdot = baxter_ptr->theta_dots;
+   baxter_ptr->theta_ddots = mass_inv * (coriolis_matrix * tdot);
+}
 
 #endif

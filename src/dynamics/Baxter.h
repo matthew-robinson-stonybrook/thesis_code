@@ -4,10 +4,18 @@
 #include<iostream>
 #include<vector>
 
-class Baxter {
+#include "manip.h"
+#include "../../eigen-3.4.0/Eigen/Dense"
+
+using namespace std;
+using namespace Eigen;
+
+class Baxter: public Manip{
    public:
       const double pi = 3.14159265;
-      const int joints = 7;
+      int joints = 7;
+      
+      Baxter();
       
       double l0 = 0.27035;
       double l1= 0.069;
@@ -114,15 +122,15 @@ class Baxter {
       vector <Matrix3d> Ims {Il1, Il2, Il3, Il4, Il5, Il6, Il7};
       
       // Link and motor masses
-      vector <double> mls {5.700440, 3.226980, 4.312720, 2.072060, 2.246650, 1.609790, 0.35093+0.191250};  
-      vector <double> mms {10, 10, 10, 10, 10, 10, 10};  
-      vector <double> krs {1, 1, 1, 1, 1, 1, 1};
+      vector <double> mls {5.70044, 3.22698, 4.31272, 2.07206, 2.24665, 1.60979, 0.35093+0.19125};  
+      vector <double> mms{5.70044, 3.22698, 4.31272, 2.07206, 2.24665, 1.60979, 0.35093+0.19125};
+      vector <double> krs {1,1,1,1,1,1,1};
                 
-      Matrix<double, 7, 1> thetas {0, 0, 0, 0, 0, 0, 0};
-      Matrix<double, 7, 1> theta_dots {0, 0, 0, 0, 0, 0, 0};
-      Matrix<double, 7, 1> theta_ddots {0, 0, 0, 0, 0, 0, 0};
+      Matrix<double,7,1> thetas {0,0,0,0,0,0,0};
+      Matrix<double,7,1> theta_dots {0,0,0,0,0,0,0};
+      Matrix<double,7,1> theta_ddots {0,0,0,0,0,0,0};
       
-      Matrix<double, 7, 3> axis_joints {
+      MatrixXd axis_joints {
    	   {0, 0, 1}, 
    	   {-1 / sqrt(2), 1 / sqrt(2), 0},
    	   {1 / sqrt(2), 1 / sqrt(2), 0},
@@ -132,7 +140,7 @@ class Baxter {
    	   {1 / sqrt(2), 1 / sqrt(2), 0},
    	   };  
    	
-      Matrix<double, 7, 3> q_joints {
+      MatrixXd q_joints {
          {0, 0, 0},
          {l1 * cos(pi/4), l1 * sin(pi/4), l0},
          {0, 0, l0},
@@ -142,7 +150,7 @@ class Baxter {
          {(l1 + l2 + l4) * cos(pi/4), (l1 + l2 + l4) * sin(pi/4), l0-l3-l5}
       };
       
-      Matrix<double, 7, 3> p_links {
+      MatrixXd p_links {
          {0, 0, l0/2},
          {l1 * cos(pi/4), l1 * sin(pi/4), l0},
          {(l1 + l2/2) * cos(pi/4), (l1 + l2/2) * sin(pi/4), l0},
@@ -161,7 +169,37 @@ class Baxter {
          {(l1 + l2 + l4) * cos(pi/4), (l1 + l2 + l4) * sin(pi/4), l0-l3-l5}, 
          {(l1 + l2 + l4 + l7/4) * cos(pi/4), (l1 + l2 + l4 + l7/4) * sin(pi/4), l0-l3-l5}
       };
+      
+      virtual ~Baxter() {cout << "Baxter:: destructor" << endl;}
+      
+      // Returns total joints
+      virtual int get_joints() {return joints;}
+      
+      // Returns link and motor inertia tensors
+      virtual vector <Matrix3d> get_Ils() {return Ils;}
+      virtual vector <Matrix3d> get_Ims() {return Ims;}
+      
+      // Returns link and motor masses and transmission ratios
+      virtual vector <double> get_mls() {return mls;}
+      virtual vector <double> get_mms() {return mms;}
+      virtual vector <double> get_krs() {return krs;}
+      
+      // Returns joint space position, velocity, and accel
+      virtual MatrixXd get_thetas() {return thetas;}
+      virtual MatrixXd get_theta_dots() {return theta_dots;}
+      virtual MatrixXd get_theta_ddots() {return theta_ddots;}
+      
+      // Returns joint configs, vector to joint axes, and vec to link CoM
+      virtual MatrixXd get_axis_joints() {return axis_joints;}
+      virtual MatrixXd get_q_joints() {return q_joints;}
+      virtual MatrixXd get_p_links() {return p_links;}
+      
 
 };
+
+Baxter::Baxter(){
+   cout << "Baxter:: constructor" << endl;
+};
+
 
 #endif

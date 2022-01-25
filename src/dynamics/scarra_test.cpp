@@ -1,8 +1,7 @@
 #include<iostream>
 #include<time.h>
 
-#include "Scarra.h"
-#include "mass_matrix2.h"
+#include "Three_link.h"
 #include "dynamics.h"
 #include "linalg.h"
 #include "transformation.h"
@@ -17,18 +16,29 @@ const double pi = 3.14159265359;
    
 int main() {	
    cout << "Hello World From Thesis_Code" << endl;
-   Scarra *scarra_ptr = new Scarra();
+   clock_t tStart = clock();
    
-   Robot_Dynamics scarra_dynamics(scarra_ptr);
-   scarra_ptr->thetas = {pi/2, pi/4, pi/8};
+   Three_link *three_ptr = new Three_link();
+   three_ptr->thetas = {pi/4, -pi/8, pi/8};
+   three_ptr->theta_dots = {pi/16, pi/24, pi/30};
    
-   scarra_dynamics.calc_link_adjusted_gmasss();
-   scarra_dynamics.calc_mass_matrix();
+   Robot_Dynamics three_link_dynamics(three_ptr);
+   three_link_dynamics.calc_mass_matrix();
+   three_link_dynamics.calc_coriolis_matrix();
+   
+   //cout << "Christoffel 112: " << scarra_dynamics.calc_christoffel(1, 1, 2) << endl;
    
    cout << "Reference Scarra Mass Matrix: " << endl;
-   cout << scarra_ptr->reference_mass_matrix() << endl;
-   cout << "Calculated Scarra Twist Coordinates: " << endl;
-   cout << scarra_dynamics.mass_matrix << endl;
+   cout << three_ptr->reference_coriolis_matrix() << endl;
+   cout << "Calculated Scarra Mass Matrix (Robot_Dynamics): " << endl;
+   cout << three_link_dynamics.coriolis_matrix << endl;
    
+   double ellapsed_us = ((clock() - tStart) * 1000000) / CLOCKS_PER_SEC;
+   if(ellapsed_us <= 999999) {
+      cout << "TIME: " << ellapsed_us << "s e-6" << endl;
+   }
+   else {
+      cout << "TIME: " << ellapsed_us/1000 << "s e-3" << endl;
+   }
    return 0;      
 }

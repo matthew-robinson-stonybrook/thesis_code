@@ -14,7 +14,7 @@ using namespace Eigen;
 
 class Mass_Matrix2 {
    public:
-      Baxter *baxter;
+      Manip *manip_ptr;
       int joints;
       MatrixXd axis_joints;
       MatrixXd q_joints;
@@ -32,7 +32,7 @@ class Mass_Matrix2 {
       vector <MatrixXd> actuator_oJacs;
       vector <Matrix3d> actuator_rots;   
 
-      Mass_Matrix2(Baxter*);
+      Mass_Matrix2(Manip*);
       
       void calculate_twist_coords();
       Matrix<double, 6, 6> calculate_generalized_mass(int mass, Matrix3d inertia);
@@ -47,11 +47,11 @@ class Mass_Matrix2 {
 
 };
 
-Mass_Matrix2::Mass_Matrix2(Baxter* manip) : baxter{manip} {
-   joints = baxter->joints;
-   axis_joints = baxter->axis_joints;
-   q_joints = baxter->q_joints;
-   mass_matrix.resize(baxter->joints, baxter->joints);
+Mass_Matrix2::Mass_Matrix2(Manip* manip) : manip_ptr{manip} {
+   joints = manip_ptr->joints;
+   axis_joints = manip_ptr->axis_joints;
+   q_joints = manip_ptr->q_joints;
+   mass_matrix.resize(manip_ptr->joints, manip_ptr->joints);
    
 }
 
@@ -102,11 +102,11 @@ Matrix<double, 6, 6> Mass_Matrix2::calculate_generalized_mass(int mass, Matrix3d
 Matrix<double, 6, 6> Mass_Matrix2::calculate_adjusted_gmass(Matrix<double, 6, 6> gmass, int link) {
    Matrix4d gsli0 = linalg::eye4;
    for(int joint{0}; joint < link; joint++) {
-      double theta = baxter->thetas(joint);
+      double theta = manip_ptr->thetas(joint);
       Matrix4d gj = g::twist(twist_coords.row(joint), theta);
       gsli0 = gsli0 * gj;
    }
-   MatrixXd p_link = baxter->p_links.row(link-1);
+   MatrixXd p_link = manip_ptr->p_links.row(link-1);
    Matrix4d gsli = linalg::eye4;
    gsli(0, 3) = p_link(0);
    gsli(1, 3) = p_link(1);
@@ -126,7 +126,7 @@ Matrix<double, 6, 6> Mass_Matrix2::calculate_adjoint_ij(int i, int j) {
    
    if (i > j) {
       for(int k{j+1}; k <= i; k++) {
-         g = g * g::twist(twist_coords.row(k), baxter->thetas(k));
+         g = g * g::twist(twist_coords.row(k), manip_ptr->thetas(k));
       }
       
       adjoint = g::adjoint(g.inverse());
@@ -158,7 +158,7 @@ MatrixXd Mass_Matrix2::calculate_link_Jac(int link) {
    }
    
    
-   MatrixXd p_link {baxter->p_links.row(link)};
+   MatrixXd p_link {manip_ptr->p_links.row(link)};
    Matrix4d gsli;
    Matrix<double, 6, 1> ej_dagger;
    Matrix4d gj_hat {linalg::eye4};
@@ -170,7 +170,7 @@ MatrixXd Mass_Matrix2::calculate_link_Jac(int link) {
       gsli(2, 3) = p_link(2);
       
       for(int t{col}; t < link; t++) {
-         Matrix4d gi = g::twist(twist_coords.row(t), baxter->thetas(t));
+         Matrix4d gi = g::twist(twist_coords.row(t), manip_ptr->thetas(t));
          gj_hat *= gi;
       }
       
@@ -201,7 +201,7 @@ void Mass_Matrix2::calculate_mass_matrix() {
    
    // Add link terms
    for(int link{0}; link < joints; link++) {
-      gen_mass = calculate_generalized_mass(baxter->mls.at(link), baxter->Ils.at(link));
+      gen_mass = calculate_generalized_mass(manip_ptr->mls.at(link), manip_ptr->Ils.at(link));
       jacobian = calculate_link_Jac(link);
       mass_matrix += jacobian.transpose() * gen_mass * jacobian;
    }
@@ -213,7 +213,7 @@ MatrixXd Mass_Matrix2::calculate_mass_matrix2() {
    
    calculate_twist_coords();
    
-   const int js {baxter->joints};
+   const int js {manip_ptr->joints};
    MatrixXd mass_matrix;
    mass_matrix.resize(js,js);
    
@@ -237,8 +237,8 @@ MatrixXd Mass_Matrix2::calculate_mass_matrix2() {
          double  val = 0;
          
          for(int l{max(row,col)}; l < js; l++) {
-            m = baxter->mls.at(l);
-            I = baxter->Ils.at(l);
+            m = manip_ptr->mls.at(l);
+            I = manip_ptr->Ils.at(l);
             gmass = calculate_generalized_mass(m, I);
             
             adjusted_gmass = calculate_adjusted_gmass(gmass, l + 1);

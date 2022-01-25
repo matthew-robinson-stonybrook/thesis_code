@@ -1,5 +1,5 @@
-#ifndef _SCARRA_H_
-#define _SCARRA_H_
+#ifndef _THREE_LINK_H_
+#define _THREE_LINK_H_
 
 #include<iostream>
 #include<vector>
@@ -10,10 +10,10 @@
 using namespace std;
 using namespace Eigen;
 
-class Scarra: public Manip{
+class Three_link: public Manip{
    public:
-      Scarra();
-      int joints = 4;
+      Three_link();
+      int joints = 3;
       
       // Link and motor inertia tensors
       
@@ -44,26 +44,17 @@ class Scarra: public Manip{
          {0, 0, Iz3}
       };
       
-      double Ix4 = 0.8;
-      double Iy4 = 0.6;
-      double Iz4 = 0.4;
-      Matrix3d Il4 {
-         {Ix4, 0, 0},
-         {0, Iy4, 0},
-         {0, 0, Iz4}
-      };
-      
-      vector <Matrix3d> Ils {Il1, Il2, Il3, Il4};
-      vector <Matrix3d> Ims {Il1, Il2, Il3, Il4};
+      vector <Matrix3d> Ils {Il1, Il2, Il3};
+      vector <Matrix3d> Ims {Il1, Il2, Il3};
       
       // Link and motor masses
-      vector <double> mls {3.3,2.6,1.8, 0.6};
-      vector <double> mms {3.3,2.6,1.8, 0.6};
+      vector <double> mls {1.3,2.6,4.8};
+      vector <double> mms {1.3,2.6,4.8};
       vector <double> krs {1,1,1};
           
-      Matrix<double,3,1> thetas {0,0,0,0};
-      Matrix<double,3,1> theta_dots {0,0,0,0};
-      Matrix<double,3,1> theta_ddots {0,0,0,0};
+      Matrix<double,3,1> thetas {0,0,0};
+      Matrix<double,3,1> theta_dots {0,0,0};
+      Matrix<double,3,1> theta_ddots {0,0,0};
       
       double r0 = 0.3;
       double l0 = 0.6;
@@ -75,15 +66,13 @@ class Scarra: public Manip{
       
       MatrixXd axis_joints {
          {0,0,1},
-         {0,0,1},
-         {0,0,1},
-         {0,0,1}
+         {-1,0,0},
+         {-1,0,0}
       };
       MatrixXd q_joints{
          {0,0,0},
-         {0,l1,0},
-         {0,l1+l2, 0},
-         {0,l1+l2, 0}
+         {0,0,l0},
+         {0,l1,l0}
       };
       MatrixXd p_links{
          {0,0,r0},
@@ -118,11 +107,11 @@ class Scarra: public Manip{
       Matrix3d reference_coriolis_matrix();
 };
 
-Scarra::Scarra() {
-   cout << "Scarra Contructor" << endl;
+Three_link::Three_link() {
+   cout << "Three_link Contructor" << endl;
 }
 
-MatrixXd Scarra::reference_twist_coords(){
+MatrixXd Three_link::reference_twist_coords(){
    Matrix<double,3,6> twist_coords {
       {0,0,0,0,0,1},
       {0,-l0,0,-1,0,0},
@@ -131,7 +120,7 @@ MatrixXd Scarra::reference_twist_coords(){
    return twist_coords;
 }
 
-Matrix3d Scarra::reference_mass_matrix() {
+Matrix3d Three_link::reference_mass_matrix() {
    double t1 = thetas(0);
    double t2 = thetas(1);
    double t3 = thetas(2);
@@ -157,7 +146,7 @@ Matrix3d Scarra::reference_mass_matrix() {
    return mass;
 }
 
-Matrix3d Scarra::reference_coriolis_matrix() {
+Matrix3d Three_link::reference_coriolis_matrix() {
    double t1 = thetas(0);
    double t2 = thetas(1);
    double t3 = thetas(2);

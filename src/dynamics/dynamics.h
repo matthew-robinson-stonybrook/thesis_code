@@ -34,7 +34,7 @@ class Robot_Dynamics {
       
       void calc_link_adjusted_gmasss();
       
-      Matrix<double, 6, 6> calc_gmass(int mass, Matrix3d inertia);
+      Matrix<double, 6, 6> calc_gmass(double mass, Matrix3d inertia);
       Matrix<double, 6, 6> calc_adjusted_gmass(Matrix<double, 6, 6> gmass, int link);
       Matrix<double, 6, 6> calc_adjoint_ij(int i, int j);
       double calc_partialM_partialT(const int i, const int j, const int k);
@@ -61,6 +61,7 @@ Robot_Dynamics::Robot_Dynamics(Manip* manip) : manip_ptr{manip} {
    
    calc_twist_coords();
    calc_link_gmasss();
+   calc_link_adjusted_gmasss();
 }
 
 // HAPPENS ONLY IN CONSTRUCTOR
@@ -102,8 +103,8 @@ void Robot_Dynamics::calc_link_gmasss() {
    }
 }
 
-// Should be run before and dynamic matrices
-// Calculates adjusted mass matrices due to configuration 
+// HAPPENS ONLY IN CONTRUCTOR
+// Calculates adjusted mass matrices 
 void Robot_Dynamics::calc_link_adjusted_gmasss() {
    link_adjusted_gmasss.clear();
    for(int j{0}; j < joints; j++) {
@@ -113,7 +114,7 @@ void Robot_Dynamics::calc_link_adjusted_gmasss() {
 }
 
 // Should only be run in calc_gmasss() in contructor
-Matrix<double, 6, 6> Robot_Dynamics::calc_gmass(int mass, Matrix3d inertia) {
+Matrix<double, 6, 6> Robot_Dynamics::calc_gmass(double mass, Matrix3d inertia) {
    Matrix<double, 6, 6> gen_mass;
    
    for(int row{0}; row < 6; row++) {
@@ -149,7 +150,7 @@ Matrix<double, 6, 6> Robot_Dynamics::calc_adjusted_gmass(Matrix<double, 6, 6> gm
    gsli(0, 3) = p_link(0);
    gsli(1, 3) = p_link(1);
    gsli(2, 3) = p_link(2);
-   gsli0 = gsli0 * gsli;
+   gsli0 = gsli;
    
    Matrix<double,6,6> adj_gsli0_inv = g::adjoint(gsli0.inverse());
    
@@ -165,7 +166,7 @@ Matrix<double, 6, 6> Robot_Dynamics::calc_adjoint_ij(int i, int j) {
    
    if (i > j) {
       for(int k{j+1}; k <= i; k++) {
-         g = g * g::twist(twist_coords.row(k), manip_ptr->get_thetas()(k));
+         g *= g::twist(twist_coords.row(k), manip_ptr->get_thetas()(k));
       }
       
       adjoint = g::adjoint(g.inverse());
@@ -242,16 +243,16 @@ double Robot_Dynamics::calc_partialM_partialT(const int i, const int j, const in
       Matrix<double, 6, 6> adj_li = calc_adjoint_ij(l, i);
       Matrix<double, 6, 6> adj_lj = calc_adjoint_ij(l, j);
       Matrix<double, 6, 6> adj_lk = calc_adjoint_ij(l, k);
-
-      // Adjoint(k-1)i
-      Matrix<double, 6, 6> adj_k1_i = calc_adjoint_ij(k-1, i);
-      // Adjoint(k-1)j
-      Matrix<double, 6, 6> adj_k1_j = calc_adjoint_ij(k-1, j);
+      
+      // Adjointki
+      Matrix<double, 6, 6> adj_ki = calc_adjoint_ij(k, i);
+      // Adjointkj
+      Matrix<double, 6, 6> adj_kj = calc_adjoint_ij(k, j);
       
       // Lie bracket twist coord [A(k-1)i * ei, ek]  
-      Matrix<double,6,1> twist_lie1 = g::lie_bracket(adj_k1_i * twisti, twistk);
+      Matrix<double,6,1> twist_lie1 = g::lie_bracket(adj_ki * twisti, twistk);
       // Lie bracket twist coord [A(k-1)j * ej, ek]  
-      Matrix<double,6,1> twist_lie2 = g::lie_bracket(adj_k1_j * twistj, twistk);
+      Matrix<double,6,1> twist_lie2 = g::lie_bracket(adj_kj* twistj, twistk);
       
       partialM += twist_lie1.transpose() * adj_lk.transpose() * adjusted_gmass * adj_lj * twistj;
       partialM += twisti.transpose() * adj_li.transpose() * adjusted_gmass * adj_lk * twist_lie2;
@@ -284,12 +285,13 @@ void Robot_Dynamics::calc_coriolis_matrix() {
    
    for(int row{0}; row < js; row++) {
       for(int col{0}; col < js; col++) {
+         double sum = 0;
          for(int k{0}; k < js; k++) {
             double theta_dot_k = manip_ptr->get_theta_dots()(k);
             double christoffel_ijk = calc_christoffel(row, col, k);
-            
-            coriolis_matrix(row, col) += christoffel_ijk * theta_dot_k;
-         } 
+            sum += christoffel_ijk * theta_dot_k;
+         }
+         coriolis_matrix(row, col) = sum;
       }
    }
 }

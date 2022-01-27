@@ -25,18 +25,18 @@ int main() {
    
    Robot_Dynamics baxter_dynamics(baxter_ptr);
    
+   /*
    baxter_dynamics.calc_mass_matrix();
    baxter_dynamics.calc_coriolis_matrix();
    baxter_dynamics.calc_potential_energy();
    baxter_dynamics.calc_kinetic_energy();
-   
    cout << "Baxter Mass Matrix" << endl;
    cout << baxter_dynamics.mass_matrix << endl;
    cout << "Baxter Coriolis Matrix" << endl;
    cout << baxter_dynamics.coriolis_matrix << endl;
+   */
    
-   /*
-   for(int t{0}; t<=10; t++) {
+   for(int t{0}; t<=100; t++) {
       // Calculate EoM
       baxter_dynamics.calc_mass_matrix();
       baxter_dynamics.calc_coriolis_matrix();
@@ -46,16 +46,18 @@ int main() {
       baxter_dynamics.calc_potential_energy();
       baxter_dynamics.calc_kinetic_energy();
       
-      cout << "KE " << endl;
-      cout << baxter_dynamics.T << endl;
+      cout << "KE: " << baxter_dynamics.T << endl;
+      cout << "PE: " <<  baxter_dynamics.V << endl;
+      cout << "Total Energy: " << baxter_dynamics.T + baxter_dynamics.V << endl;
       
+      baxter_ptr->theta_ddots = baxter_dynamics.calc_theta_ddot();
       cout << "Jointt Accel: " << endl;
       cout << baxter_ptr->theta_ddots << endl;
       
       baxter_ptr->theta_dots += (baxter_ptr->theta_ddots); 
       baxter_ptr->thetas += (baxter_ptr->theta_dots);
    }
-   */
+   
    
    /*
    cout << "Mass Matrix: " << endl;

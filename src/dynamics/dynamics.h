@@ -45,7 +45,7 @@ class Robot_Dynamics {
       void calc_potential_energy();
       void calc_kinetic_energy();
       
-      void calc_theta_ddot();
+      MatrixXd calc_theta_ddot();
       
 };
 
@@ -322,10 +322,12 @@ void Robot_Dynamics::calc_kinetic_energy() {
    T = a(0,0)/2;
 }
 
-void Robot_Dynamics::calc_theta_ddot() {
+MatrixXd Robot_Dynamics::calc_theta_ddot() {
    MatrixXd mass_inv = mass_matrix.inverse();
    MatrixXd tdot = manip_ptr->get_theta_dots();
-   manip_ptr->theta_ddots = mass_inv * (coriolis_matrix * tdot);
+   MatrixXd tddot = mass_inv * (-coriolis_matrix * tdot);
+   return tddot;
 }
+
 
 #endif

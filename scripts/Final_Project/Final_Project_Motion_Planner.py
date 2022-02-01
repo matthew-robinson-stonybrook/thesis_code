@@ -245,6 +245,7 @@ fig3 = plt.figure(3)
 ax = plt.axes(projection='3d')
 plt.title("Motion of Opening Door")
 
+'''
 # Motion planner for opening the door
 baxter_open = Motion_Planner(gst0, baxter_handle_turn.g, baxter_handle_turn.config, g_open, axis_joints, q_joints, type_joints)
 # Plot them points
@@ -261,6 +262,6 @@ print(" ")
 
 ax.legend()
 plt.show()
-
+'''
 
 

@@ -1,27 +1,23 @@
 import numpy as np
 import math as m
-from Quat_Math import Quat_Math
+from quat_math import Quat_Math
 from mpl_toolkits import mplot3d
 import matplotlib.pyplot as plt
 
-# gst0: neutral end effector configuration (all joints 0)
-# g0: initial end effector configuration at start of this motion
-# config0: joint positions at start of this motion
-# gstf: desired final end effector configuration
-# axis_joints: manipulator joint axes orientation vectors
-# q_joints: manipulator joint axes position vectors (anywhere on axis)
-# type_joints: "R" for revolute, "P" for prismatic
+# manip: manipulator class with kinematic properties specified\
+# gstf: desired final end-effector configuration (homog transformation matrix)
 class Motion_Planner(Quat_Math):
-    def __init__(self, gst0, g0, config0, gstf, axis_joints, q_joints, type_joints):
-        self.gst0 = np.array(gst0)
-        self.g0 = np.array(g0)
+    def __init__(self, manip, gstf):
+        self.manip = manip
+        self.gst0 = np.array(manip.gst0)
+        self.g0 = np.array(manip.ge)
         self.A0 = self.g_to_dual_quat(self.g0)
-        self.g = np.array(g0)
-        self.config = config0
+        self.g = np.array(manip.ge)
+        self.config = manip.thetas
         self.gstf = np.array(gstf)
-        self.axis_joints = axis_joints
-        self.q_joints = q_joints
-        self.type_joints = type_joints
+        self.axis_joints = manip.axis_joints
+        self.q_joints = manip.q_joints
+        self.type_joints = manip.type_joints
 
         self.Af = self.g_to_dual_quat(self.gstf)
         self.tau = 0.01
@@ -68,10 +64,11 @@ class Motion_Planner(Quat_Math):
 
     def update_values(self):
         self.g = self.g_prime
+        self.manip.ge = self.g
         self.config = self.config_prime
+        self.manip.thetas = self.config_prime
 
         A0Af = self.dual_quat_product(self.dual_conjugate(self.A0), self.Af)
-        print(A0Af)
         thetai = 2 * np.arccos(A0Af[0,0])
         pi = self.dual_quat_to_p(A0Af)
         pi = m.sqrt(pi[0]**2 + pi[1]**2 + pi[2]**2)

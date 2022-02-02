@@ -22,6 +22,10 @@ class Motion_Planner(Quat_Math):
         self.Af = self.g_to_dual_quat(self.gstf)
         self.tau = 0.01
         self.beta = 1
+        
+        # Empty list of joint positions to added to during motion planning
+        self.joint_path = [self.config]
+        print(self.joint_path)
 
         # Step 1: Convert g into gamma and dual unit quat At
         self.At = 0
@@ -64,9 +68,9 @@ class Motion_Planner(Quat_Math):
 
     def update_values(self):
         self.g = self.g_prime
-        self.manip.ge = self.g
+        self.manip.ge = self.g.tolist()
         self.config = self.config_prime
-        self.manip.thetas = self.config_prime
+        self.manip.thetas = self.config_prime.tolist()
 
         A0Af = self.dual_quat_product(self.dual_conjugate(self.A0), self.Af)
         thetai = 2 * np.arccos(A0Af[0,0])

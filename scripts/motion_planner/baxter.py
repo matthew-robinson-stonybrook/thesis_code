@@ -3,14 +3,14 @@ import math as m
 class Baxter:
    def __init__(self):
       self.joints = 7
-      self.l0 = 0.27035;
-      self.l1= 0.069;
-      self.l2 = 0.36459;
-      self.l3 = 0.069;
-      self.l4 = 0.37429;
-      self.l5 = 0.010;
-      self.l6 = 0.37442;
-      self.l7 = 0.22953;
+      self.l0 = 0.27035 * 1000
+      self.l1= 0.069 * 1000
+      self.l2 = 0.36435 * 1000
+      self.l3 = 0.069 * 1000
+      self.l4 = 0.37429 * 1000
+      self.l5 = 0.010 * 1000
+      self.l6 = 0.37442 * 1000
+      self.l7 = 0.22953 * 1000
       
       self.axis_joints = [
       [0, 0, 1],
@@ -61,7 +61,7 @@ class Baxter:
       p4 = [(self.l1 + self.l2 + self.l4) * cti, (self.l1 + self.l2 + self.l4) * sti, self.l0 - self.l3]
       p5 = p4
       p5[2] = self.l0 - self.l3 - self.l5
-      p6 = [(self.l0 - self.l3 - self.l5 + self.l7) * cti, (self.l1 + self.l2 + self.l4 + self.l7) * sti, self.l0 - self.l3 - self.l5]
+      p6 = [(self.l0 + self.l3 + self.l5 + self.l7) * cti, (self.l1 + self.l2 + self.l4 + self.l7) * sti, self.l0 - self.l3 - self.l5]
 
       axis_length = 100
       self.x_axis = [(self.l1 + self.l2 + self.l4 + self.l7 + axis_length) * cti, (self.l1 + self.l2 + self.l4 + self.l7 - axis_length) * sti, self.l0 - self.l3 - self.l5]

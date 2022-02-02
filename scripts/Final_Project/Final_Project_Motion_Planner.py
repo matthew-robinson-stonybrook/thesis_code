@@ -157,7 +157,6 @@ g_turn = [[0, 0, -1, 0],
      [0, 0, 0, 1]]
 
 g_turn = np.dot(g_handle, g_turn)
-print(g_turn)
 
 # Open door position will be same as initial position, but will be rotated 90 degrees about z
 g_open = [[0, 0, -1, (l2 + l3 + l5 + l8 - 400) * m.cos(3 * m.pi / 8)],
@@ -196,6 +195,7 @@ baxter_to_handle = Motion_Planner(gst0, gst0, config0, g_handle, axis_joints, q_
 # Plot them points
 motion_iterator(baxter_to_handle)
 
+
 print("Tao: " + str(baxter_to_handle.tau))
 print("Beta: " + str(baxter_to_handle.beta))
 print(" ")
@@ -224,6 +224,7 @@ fig2 = plt.figure(2)
 ax = plt.axes(projection='3d')
 plt.title("Motion of Twisting Door Knob")
 
+'''
 # Motion planner for twisting handle
 baxter_handle_turn = Motion_Planner(gst0, baxter_to_handle.g, baxter_to_handle.config, g_turn, axis_joints, q_joints, type_joints)
 # Plot them points
@@ -244,6 +245,7 @@ plt.show()
 fig3 = plt.figure(3)
 ax = plt.axes(projection='3d')
 plt.title("Motion of Opening Door")
+'''
 
 '''
 # Motion planner for opening the door

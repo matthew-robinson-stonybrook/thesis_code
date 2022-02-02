@@ -56,13 +56,13 @@ def plot_manip(manip, graph, title, color):
     for index in range(1, len(manip.initial_config_points)):
         point = manip.initial_config_points[index]
         g0 = [[1, 0, 0, point[0]], [0, 1, 0, point[1]], [0, 0, 1, point[2]], [0, 0, 0, 1]]
-        initial_points.append(manipdkin_sp(manip, index)[0])
+        points.append(manipdkin_sp(manip, index)[0])
 
     #Plot the initial config using points just calculated
-    initial_points = np.array(initial_points)
-    x = initial_points[:, 0]
-    y = initial_points[:, 1]
-    z = initial_points[:, 2]
+    points = np.array(points)
+    x = points[:, 0]
+    y = points[:, 1]
+    z = points[:, 2]
     graph.plot3D(x, y, z, color, label = title)
     
     '''
@@ -82,7 +82,7 @@ def plot_manip(manip, graph, title, color):
 def motion_iterator(motion_planner, graph=0):
     
     if (graph != 0):
-        plot_manip(motion_planner.manip, graph, 'yellow', "Initial Config")
+        plot_manip(motion_planner.manip, graph, "Initial Config", 'yellow')
         
     # All data points for motion path to be plotted
     xdata = []
@@ -95,13 +95,13 @@ def motion_iterator(motion_planner, graph=0):
     i = 0
     while abs(r) >= 0.01:
         for b in range(0, int(1 / motion_planner.beta)):
-            print(motion_planner.g)
             xdata.append(motion_planner.g[0, 3])
             ydata.append(motion_planner.g[1, 3])
             zdata.append(motion_planner.g[2, 3])
 
             motion_planner.iteration()
             motion_planner.update_values()
+            motion_planner.joint_path.append(motion_planner.manip.thetas)
 
             # Find the current error between the rotation matrices
             r = 0
@@ -115,12 +115,13 @@ def motion_iterator(motion_planner, graph=0):
     print(i)
     for joint in range(0,7):
         angle = motion_planner.config[joint]
-        if not baxter_joint_ranges[joint][0] <= angle <= baxter_joint_ranges[joint][1]:
+        if not motion_planner.manip.joint_ranges[joint][0] <= angle <= motion_planner.manip.joint_ranges[joint][1]:
             print('WARNING! BAXTER JOINT ' + str(joint) + ' IS OUT OF RANGE!')
 
     # Plot data points for motion path
-    graph.scatter3D(xdata, ydata, zdata, cmap='Greens')
-    plot_manip(motion_planner.manip, graph, 'orange', "Final Config")
+    if (graph != 0):
+      graph.scatter3D(xdata, ydata, zdata, cmap='Greens')
+      plot_manip(motion_planner.manip, graph, "Final Config",  'orange')
 
     '''
     # Plot x, y, and z axes of final end-effector to show orientation

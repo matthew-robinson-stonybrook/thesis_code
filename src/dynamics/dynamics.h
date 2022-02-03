@@ -13,21 +13,24 @@ using namespace Eigen;
 
 class Robot_Dynamics {
    public:
+      Robot_Dynamics(Manip*);
+      
       Manip *manip_ptr;
       int joints;
       MatrixXd axis_joints;
       MatrixXd q_joints;
       MatrixXd twist_coords;
       
+      MatrixXd spatial_manip_jac;
+      
       vector <Matrix<double,6,6>> link_gmasss;
       vector <Matrix<double,6,6>> link_adjusted_gmasss;
       
       MatrixXd mass_matrix;
       MatrixXd coriolis_matrix;
+      MatrixXd gravity_term;
       double V;
       double T;
-
-      Robot_Dynamics(Manip*);
       
       void calc_twist_coords();
       void calc_link_gmasss();
@@ -42,10 +45,14 @@ class Robot_Dynamics {
       
       void calc_mass_matrix();
       void calc_coriolis_matrix();
+      void calc_gravity_term();
+      
       void calc_potential_energy();
       void calc_kinetic_energy();
       
       MatrixXd calc_theta_ddot();
+      
+      void calc_spatial_manip_jac();
       
 };
 
@@ -58,6 +65,8 @@ Robot_Dynamics::Robot_Dynamics(Manip* manip) : manip_ptr{manip} {
    q_joints = manip_ptr->get_q_joints();
    mass_matrix.resize(manip_ptr->get_joints(), manip_ptr->get_joints());
    coriolis_matrix.resize(manip_ptr->get_joints(), manip_ptr->get_joints());
+   gravity_term.resize(manip_ptr->get_joints(), 1);
+   spatial_manip_jac.resize(6, manip_ptr->get_joints());
    
    calc_twist_coords();
    calc_link_gmasss();
@@ -296,6 +305,35 @@ void Robot_Dynamics::calc_coriolis_matrix() {
    }
 }
 
+void Robot_Dynamics::calc_gravity_term() {
+   Vector4d g {0, 0, 9.81, 0};
+   vector <Matrix4d> g1_is {linalg::eye4};
+   double sum {0};
+   
+   // Vector of adjusted link positions to be calculated next
+   vector <Vector4d> ps {};
+   for(int link {0}; link < joints; link++) {
+      Vector3d p = manip_ptr->get_p_links().row(link);
+      Vector4d ph = {p(0), p(1), p(2), 1};
+      double t = manip_ptr->get_thetas()(link);
+      
+      Matrix4d transformation = g::twist(twist_coords.row(link), t);
+      g1_is.push_back(g1_is.at(link) * transformation);
+      
+      Vector4d ph_prime = g1_is.at(link+1) * ph;
+      ps.push_back(ph_prime);
+   }
+   
+   // Calculating rows of gravity term
+   for(int row {0}; row < joints; row++) {
+      sum = 0;
+      for(int link {row}; link < joints; link++) {
+         Vector4d p = ps.at(link);
+      }
+      gravity_term(row) = 0;
+   }
+}
+
 void Robot_Dynamics::calc_potential_energy() {
    V = 0;
    double g = 9.81;
@@ -327,6 +365,26 @@ MatrixXd Robot_Dynamics::calc_theta_ddot() {
    MatrixXd tdot = manip_ptr->get_theta_dots();
    MatrixXd tddot = mass_inv * (-coriolis_matrix * tdot);
    return tddot;
+}
+
+void Robot_Dynamics::calc_spatial_manip_jac() {
+   vector <Matrix4d> g1_is {linalg::eye4};
+   for(int joint {0}; joint < manip_ptr->get_joints(); joint++) {
+      
+      double t = manip_ptr->get_thetas()(joint);
+      Matrix4d transformation = g::twist(twist_coords.row(joint), t);
+      g1_is.push_back(g1_is.at(joint) * transformation);
+      Matrix<double, 6, 6> adj = g::adjoint(g1_is.at(joint + 1));
+      Matrix<double, 6, 1> twist_prime = adj * twist_coords.row(joint).transpose();
+      
+      spatial_manip_jac(0, joint) = twist_prime(0);
+      spatial_manip_jac(1, joint) = twist_prime(1);
+      spatial_manip_jac(2, joint) = twist_prime(2);
+      spatial_manip_jac(3, joint) = twist_prime(3);
+      spatial_manip_jac(4, joint) = twist_prime(4);
+      spatial_manip_jac(5, joint) = twist_prime(5);
+      
+   }
 }
 
 

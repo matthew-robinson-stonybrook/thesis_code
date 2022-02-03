@@ -18,7 +18,7 @@ config0 = np.zeros(7)
 
 #Position and orienation homogenous matrix of cup
 g_handle= [[1, 0, 0, 0],
-      [0, 1, 0, (baxter.l1 + baxter.l2 + baxter.l4 + baxter.l7) - 300],
+      [0, 1, 0, (baxter.l1 + baxter.l2 + baxter.l4 + baxter.l7) - 0.300],
       [0, 0, 1, baxter.l0 - baxter.l3 - baxter.l5],
       [0, 0, 0, 1]]
 
@@ -31,8 +31,8 @@ g_turn = [[0, 0, -1, 0],
 g_turn = np.dot(g_handle, g_turn)
 
 # Open door position will be same as initial position, but will be rotated 90 degrees about z
-g_open = [[0, 0, -1, (baxter.l1 + baxter.l2 + baxter.l4 + baxter.l7 - 400) * m.cos(3 * m.pi / 8)],
-          [0, 1, 0, (baxter.l1 + baxter.l2 + baxter.l4 + baxter.l7 - 400) * m.sin(3 * m.pi / 8)],
+g_open = [[0, 0, -1, (baxter.l1 + baxter.l2 + baxter.l4 + baxter.l7 - 0.400) * m.cos(3 * m.pi / 8)],
+          [0, 1, 0, (baxter.l1 + baxter.l2 + baxter.l4 + baxter.l7 - 0.400) * m.sin(3 * m.pi / 8)],
           [1, 0, 0, baxter.l0 - baxter.l3 - baxter.l5],
           [0, 0, 0, 1]]
 
@@ -93,6 +93,9 @@ plt.plot(joint5_data, np.linspace(0, l, l), color = 'blue', label = "Joint 5")
 plt.plot(joint6_data, np.linspace(0, l, l), color = 'purple', label = "Joint 6")
 plt.plot(joint7_data, np.linspace(0, l, l), color = 'black', label = "Joint 7")
 plt.show()
+
+baxter.thetas = [m.pi/2, -m.pi/8, m.pi/4, -m.pi/6, 0.1, 0.1, 0.1]
+print(baxter_to_handle.spatial_manip_jac(baxter.thetas))
 
 '''
 # Motion planner for twisting handle

@@ -3,14 +3,14 @@ import math as m
 class Baxter:
    def __init__(self):
       self.joints = 7
-      self.l0 = 0.27035 * 1000
-      self.l1= 0.069 * 1000
-      self.l2 = 0.36435 * 1000
-      self.l3 = 0.069 * 1000
-      self.l4 = 0.37429 * 1000
-      self.l5 = 0.010 * 1000
-      self.l6 = 0.37442 * 1000
-      self.l7 = 0.22953 * 1000
+      self.l0 = 0.27035 
+      self.l1= 0.069 
+      self.l2 = 0.36459 
+      self.l3 = 0.069 
+      self.l4 = 0.37429
+      self.l5 = 0.010
+      self.l6 = 0.37442 
+      self.l7 = 0.22953 
       
       self.axis_joints = [
       [0, 0, 1],

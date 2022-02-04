@@ -105,6 +105,7 @@ class Three_link: public Manip{
       MatrixXd reference_twist_coords();
       Matrix3d reference_mass_matrix();
       Matrix3d reference_coriolis_matrix();
+      Vector3d reference_gravity_term();
 };
 
 Three_link::Three_link() {
@@ -193,6 +194,26 @@ Matrix3d Three_link::reference_coriolis_matrix() {
       {c31, c32, c33}
    };
    return coriolis_matrix;
+}
+
+Vector3d Three_link::reference_gravity_term() {
+   double t1 = thetas(0);
+   double t2 = thetas(1);
+   double t3 = thetas(2);
+   double m1 = mls.at(0);
+   double m2 = mls.at(1);
+   double m3 = mls.at(2);
+   
+   double g = 9.81;
+   
+   double g1 = 0;
+   double g2 = -g * ((m2 * r1 + m3 * (l1+r2)) * cos(t2) + m3 * r2 * cos(t2 + t3));
+   //double g2 = -(m2*g*r1+m3*g*l1)*cos(t2) - m3*r2*cos(t2+t3);
+   double g3 = -m3*g*r2*cos(t2+t3);
+   
+   Vector3d gravity_term {g1, g2, g3};
+   return gravity_term;
+
 }
 
 

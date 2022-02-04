@@ -19,19 +19,20 @@ int main() {
    clock_t tStart = clock();
    
    Three_link *three_ptr = new Three_link();
-   three_ptr->thetas = {pi/4, -pi/8, pi/8};
+   three_ptr->thetas = {pi/4, -pi/4, 0};
    three_ptr->theta_dots = {pi/16, pi/24, pi/30};
    
    Robot_Dynamics three_link_dynamics(three_ptr);
    three_link_dynamics.calc_mass_matrix();
    three_link_dynamics.calc_coriolis_matrix();
+   three_link_dynamics.calc_gravity_term();
    
    //cout << "Christoffel 112: " << scarra_dynamics.calc_christoffel(1, 1, 2) << endl;
    
-   cout << "Reference Scarra Mass Matrix: " << endl;
-   cout << three_ptr->reference_coriolis_matrix() << endl;
-   cout << "Calculated Scarra Mass Matrix (Robot_Dynamics): " << endl;
-   cout << three_link_dynamics.coriolis_matrix << endl;
+   cout << "Reference Scarra Grav Term: " << endl;
+   cout << three_ptr->reference_gravity_term() << endl;
+   cout << "Calculated Scarra Grav Term (Robot_Dynamics): " << endl;
+   cout << three_link_dynamics.gravity_term << endl;
    
    double ellapsed_us = ((clock() - tStart) * 1000000) / CLOCKS_PER_SEC;
    if(ellapsed_us <= 999999) {

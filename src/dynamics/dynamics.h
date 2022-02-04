@@ -308,10 +308,11 @@ void Robot_Dynamics::calc_coriolis_matrix() {
 void Robot_Dynamics::calc_gravity_term() {
    Vector4d g {0, 0, 9.81, 0};
    vector <Matrix4d> g1_is {linalg::eye4};
-   double sum {0};
    
    // Vector of adjusted link positions to be calculated next
    vector <Vector4d> ps {};
+   // Vector of adjusted twists to be calculated next
+   vector <Matrix4d> twists{};
    for(int link {0}; link < joints; link++) {
       Vector3d p = manip_ptr->get_p_links().row(link);
       Vector4d ph = {p(0), p(1), p(2), 1};
@@ -321,16 +322,25 @@ void Robot_Dynamics::calc_gravity_term() {
       g1_is.push_back(g1_is.at(link) * transformation);
       
       Vector4d ph_prime = g1_is.at(link+1) * ph;
+      Matrix<double, 6, 1> twist_coord_prime = g::adjoint(g1_is.at(link)) * twist_coords.row(link).transpose();
+      Matrix4d twist_prime = linalg::twist_skew(twist_coord_prime);
+      
       ps.push_back(ph_prime);
+      twists.push_back(twist_prime);
    }
    
+   
+   Vector4d sum {0, 0, 0, 0};
    // Calculating rows of gravity term
    for(int row {0}; row < joints; row++) {
-      sum = 0;
+      sum = {0, 0, 0, 0};
       for(int link {row}; link < joints; link++) {
          Vector4d p = ps.at(link);
+         double m = manip_ptr->get_mls().at(link);
+         sum += m * p;
       }
-      gravity_term(row) = 0;
+      
+      gravity_term(row) = g.transpose() * twists.at(row) * sum;
    }
 }
 

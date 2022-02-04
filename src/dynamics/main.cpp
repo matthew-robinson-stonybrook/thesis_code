@@ -21,6 +21,7 @@ int main() {
    // Define the baxter object, the 7 joint angle values for testing
    Baxter *baxter_ptr = new Baxter();
    baxter_ptr->thetas = {pi/2, -pi/8, pi/4, -pi/6, 0.1, 0.1, 0.1};
+   baxter_ptr->thetas = {pi/2, 0, 0, 0, 0, 0, 0};
    baxter_ptr->theta_dots = {pi/40, pi/40, pi/40, pi/40, pi/40, pi/40, pi/40};
    
    Robot_Dynamics baxter_dynamics(baxter_ptr);
@@ -29,6 +30,7 @@ int main() {
    baxter_dynamics.calc_mass_matrix();
    baxter_dynamics.calc_coriolis_matrix();
    baxter_dynamics.calc_gravity_term();
+   
    
    baxter_dynamics.calc_potential_energy();
    baxter_dynamics.calc_kinetic_energy();
@@ -39,6 +41,7 @@ int main() {
    cout << "Baxter Gravity Term" << endl;
    cout << baxter_dynamics.gravity_term << endl;   
    
+ 
    /*
    for(int t{0}; t<=100; t++) {
       // Calculate EoM

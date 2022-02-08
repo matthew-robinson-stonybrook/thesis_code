@@ -50,9 +50,9 @@ class Robot_Dynamics {
       void calc_potential_energy();
       void calc_kinetic_energy();
       
-      MatrixXd calc_theta_ddot();
-      
       void calc_spatial_manip_jac();
+      
+      Matrix4d forward_kin();
       
 };
 
@@ -370,13 +370,6 @@ void Robot_Dynamics::calc_kinetic_energy() {
    T = a(0,0)/2;
 }
 
-MatrixXd Robot_Dynamics::calc_theta_ddot() {
-   MatrixXd mass_inv = mass_matrix.inverse();
-   MatrixXd tdot = manip_ptr->get_theta_dots();
-   MatrixXd tddot = mass_inv * (-coriolis_matrix * tdot);
-   return tddot;
-}
-
 void Robot_Dynamics::calc_spatial_manip_jac() {
    vector <Matrix4d> g1_is {linalg::eye4};
    for(int joint {0}; joint < manip_ptr->get_joints(); joint++) {
@@ -395,6 +388,17 @@ void Robot_Dynamics::calc_spatial_manip_jac() {
       spatial_manip_jac(5, joint) = twist_prime(5);
       
    }
+}
+
+Matrix4d Robot_Dynamics::forward_kin() {
+   Matrix4d ge {linalg::eye4};
+   double t;
+   for (int joint {0}; joint < joints; joint++) {
+      t = manip_ptr->get_thetas()(joint);
+      ge *= g::twist(twist_coords.row(joint), t);
+   }
+   ge *= manip_ptr->get_gst0();
+   return ge;
 }
 
 

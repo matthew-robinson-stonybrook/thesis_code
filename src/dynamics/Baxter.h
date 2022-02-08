@@ -2,6 +2,10 @@
 #define _BAXTER_H_
 
 #include<iostream>
+#include<fstream>
+#include<string>
+#include<vector>
+#include<sstream>
 #include<vector>
 
 #include "manip.h"
@@ -130,6 +134,8 @@ class Baxter: public Manip{
       Matrix<double,7,1> theta_dots {0,0,0,0,0,0,0};
       Matrix<double,7,1> theta_ddots {0,0,0,0,0,0,0};
       
+      vector <Matrix<double, 7, 1>> joint_path;
+      
       MatrixXd axis_joints {
    	   {0, 0, 1}, 
    	   {-1 / sqrt(2), 1 / sqrt(2), 0},
@@ -170,6 +176,13 @@ class Baxter: public Manip{
          {(l1 + l2 + l4 + l7/4) * cos(pi/4), (l1 + l2 + l4 + l7/4) * sin(pi/4), l0-l3-l5}
       };
       
+      Matrix4d gst0 {
+         {1/sqrt(2), 1/sqrt(2), 0, (l1 + l2 + l4 + l7) * cos(pi/4)},
+         {-1/sqrt(2), 1/sqrt(2), 0, (l1 + l2 + l4 + l7) * sin(pi/4)},
+         {0, 0, 1, l0 - l3 - l5},
+         {0, 0, 0, 1}
+      };
+      
       virtual ~Baxter() {cout << "Baxter:: destructor" << endl;}
       
       // Returns total joints
@@ -194,12 +207,34 @@ class Baxter: public Manip{
       virtual MatrixXd get_q_joints() {return q_joints;}
       virtual MatrixXd get_p_links() {return p_links;}
       
-
+      // Return initial end-effector transformation matirx
+      virtual Matrix4d get_gst0() {return gst0;}
+      
+      virtual void set_joint_path(string);
+      
 };
 
 Baxter::Baxter(){
    cout << "Baxter:: constructor" << endl;
 };
+
+void Baxter::set_joint_path(string file_name) {
+   string line, theta;
+   fstream file (file_name, ios::in);
+   if(file.is_open()) {
+      while(getline(file, line)) {
+         stringstream str(line);
+         
+         Matrix<double, 7, 1> config {0, 0, 0, 0, 0, 0, 0};
+         int joint {0};
+         while(getline(str, theta, ',')) {
+            config(joint) = stod(theta);
+            joint += 1;
+         }
+         joint_path.push_back(config);
+      }
+   }
+}
 
 
 #endif

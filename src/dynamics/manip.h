@@ -26,10 +26,12 @@ class Manip {
       MatrixXd theta_dots;
       MatrixXd theta_ddots;
       
-      
       MatrixXd axis_joints;
       MatrixXd q_joints;
       MatrixXd p_links;
+      
+      Matrix4d gst0;
+      
       
       virtual int get_joints()=0;;
       
@@ -46,10 +48,11 @@ class Manip {
       virtual MatrixXd get_theta_dots()=0;
       virtual MatrixXd get_theta_ddots()=0;
       
-      
       virtual MatrixXd get_axis_joints()=0;
       virtual MatrixXd get_q_joints()=0;
       virtual MatrixXd get_p_links()=0;
+
+      virtual Matrix4d get_gst0()=0;
       
       Manip();
       virtual ~Manip() {cout << "Manip:: destructor" << endl;}

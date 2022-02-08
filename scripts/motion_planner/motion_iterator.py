@@ -132,3 +132,4 @@ def motion_iterator(motion_planner, graph=0):
     ax.plot3D([x[-1], y_axis_final[0]], [y[-1], y_axis_final[1]],  [z[-1], y_axis_final[2]], "green")
     ax.plot3D([x[-1], z_axis_final[0]], [y[-1], z_axis_final[1]], [z[-1], z_axis_final[2]], "blue")
    '''
+   

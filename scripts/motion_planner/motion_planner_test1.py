@@ -3,15 +3,20 @@
 import numpy as np
 import math as m
 import matplotlib.pyplot as plt
-
 import csv
 
 from motion_planner_class import Motion_Planner
 from baxter import Baxter
+from csv_writer import CsvWriter
 import motion_iterator as mit
+
+baxter_to_handle_csv = "../../csv_files/baxter_to_handle.csv"
 
 # Baxter link lengths (check drawing reference)
 baxter = Baxter()
+
+# Csv writer object
+csv_writer = CsvWriter(baxter_to_handle_csv)
 
 # All thetas = 0
 config0 = np.zeros(7)
@@ -47,6 +52,10 @@ plt.title("Motion from Neutral Position to Door Knob")
 baxter_to_handle = Motion_Planner(baxter, g_handle)
 # Plot them points
 mit.motion_iterator(baxter_to_handle, ax)
+
+# Write joint trajectories to csv file
+csv_writer.csvList = baxter_to_handle.joint_path
+csv_writer.write_csv()
 
 
 print("Tao: " + str(baxter_to_handle.tau))

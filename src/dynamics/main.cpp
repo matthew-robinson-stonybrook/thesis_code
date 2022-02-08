@@ -1,4 +1,8 @@
 #include<iostream>
+#include<fstream>
+#include<string>
+#include<vector>
+#include<sstream>
 #include<time.h>
 
 #include "Baxter.h"
@@ -13,6 +17,7 @@ using namespace std;
 using namespace Eigen;
 
 const double pi = 3.14159265359;
+string baxter_to_handle_csv {"../../csv_files/baxter_to_handle.csv"};
    
 int main() {	
    cout << "Hello World From Thesis_Code" << endl;
@@ -31,16 +36,19 @@ int main() {
    baxter_dynamics.calc_coriolis_matrix();
    baxter_dynamics.calc_gravity_term();
    
-   
    baxter_dynamics.calc_potential_energy();
    baxter_dynamics.calc_kinetic_energy();
+   /*
    cout << "Baxter Mass Matrix" << endl;
    cout << baxter_dynamics.mass_matrix << endl;
    cout << "Baxter Coriolis Matrix" << endl;
    cout << baxter_dynamics.coriolis_matrix << endl;
    cout << "Baxter Gravity Term" << endl;
    cout << baxter_dynamics.gravity_term << endl;   
+   */
    
+
+   baxter_ptr->set_joint_path(baxter_to_handle_csv);
  
    /*
    for(int t{0}; t<=100; t++) {

@@ -42,48 +42,7 @@ int main() {
    
    // Baxter Impedence Controller
    Controller baxter_ic = Controller(baxter_ptr);
-   
-   Vector2d n1 {1,3};
-   Vector2d n2 {2,5};
-   Matrix<double, 3, 2> v1 {
-      {0.1, 0.2},
-      {0.3, 0.4},
-      {0.5, 0.6}
-   };
-   Matrix<double, 3, 2> v2 {
-      {0.7, 0.8},
-      {0.9, 1.0},
-      {1.1, 1.2}
-   };
-   
-   double a = sqrt(pow(n1(0),2) + pow(v1(0,0),2) + pow(v1(1,0),2) + pow(v1(2,0),2));
-   double b = sqrt(pow(n1(1),2) + pow(v1(0,1),2) + pow(v1(1,1),2) + pow(v1(2,1),2));
-   double c = sqrt(pow(n2(0),2) + pow(v2(0,0),2) + pow(v1(1,0),2) + pow(v1(2,0),2));
-   double d = sqrt(pow(n2(1),2) + pow(v2(0,1),2) + pow(v1(1,1),2) + pow(v1(2,1),2));
-   
-   Matrix<double, 4, 2> dq1{
-      {n1(0)/a, n1(1)/b},
-      {v1(0,0)/a, v1(0,1)/b},
-      {v1(1,0)/a, v1(1,1)/b},
-      {v1(2,0)/a, v1(2,1)/b}
-   };
-
-   Matrix<double, 4, 2> dq2{
-      {n2(0)/c, n2(1)/d},
-      {v2(0,0)/c, v2(0,1)/d},
-      {v2(1,0)/c, v2(1,1)/d},
-      {v2(2,0)/c, v2(2,1)/d}
-   };
-   
-   Matrix4d g {
-      {0.707, -0.707, 0, 5},
-      {0.707, 0.707, 0, 7},
-      {0, 0, 1, 9.3},
-      {0, 0, 0, 1}
-   };
-   
-   cout << "G to dual quat" << endl;
-   cout << quat_math::g_to_dual_quat(g) << endl;
+ 
    
    double ellapsed_us = ((clock() - tStart) * 1000000) / CLOCKS_PER_SEC;
    if(ellapsed_us <= 999999) {

@@ -17,6 +17,7 @@ class Controller {
    public:
       Controller(Manip*);
       Manip *manip_ptr;
+      int joints;
       
       Matrix<double, 6, 6> Md {linalg::eye6};
       Matrix<double, 6, 6> Kd {linalg::eye6};
@@ -29,10 +30,19 @@ class Controller {
       Matrix<double, 6, 1> x_ddot {0, 0, 0, 0, 0, 0};
       Matrix<double, 6, 1> xd_ddot {0, 0, 0, 0, 0, 0};
    
+      MatrixXd y; 
+      MatrixXd jac_pseudo_inverse;
+   
+      void calc_control_input();
 };
 
 Controller::Controller(Manip* manip) : manip_ptr{manip} {
    cout << "Controller Contructor" << endl;
+   
+   joints = manip_ptr->get_joints();
+   y.resize(manip_ptr->get_joints(), 1);
+   jac_pseudo_inverse.resize(
+   
 }
 
 #endif

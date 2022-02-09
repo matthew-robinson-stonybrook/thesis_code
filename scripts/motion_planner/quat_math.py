@@ -139,7 +139,6 @@ class Quat_Math:
                       [-1, 1, -1, 1], [-1, -1, 1, 1]])
         D = np.array([r11, r22, r33, 1])
         Q = (1 / 4) * np.dot(M, D)
-
         qMax = max(Q[0], Q[1], Q[2], Q[3])
         qMaxIndex = np.where(Q == qMax)[0][0]
 

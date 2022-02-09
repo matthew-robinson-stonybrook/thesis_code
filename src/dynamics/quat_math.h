@@ -179,8 +179,7 @@ namespace quat_math {
       };
       
       Vector4d D {r11, r22, r33, 1};
-      Vector4d Q = (1 / 4) * M * D;
-      
+      Vector4d Q = 0.25 * (M*D);  
       double q_max {0};
       int q_max_index {0};
       for(int i{0}; i<4; i++) {
@@ -241,23 +240,23 @@ namespace quat_math {
       return A;
    }
    
-   /*
-   def g_to_gamma(self, g) {
-      R = g[0:3, 0:3]
-      p = g[0:3, 3]
-      Ar = self.rot_to_quat(R)
-      gamma = np.hstack((p[0:3], Ar))
-      return gamma
+   
+   Matrix<double, 7, 1> g_to_gamma(Matrix4d g) {
+      Matrix3d R = g(seq(0,2), seq(0,2));
+      Vector3d p = g(seq(0,2), 3);
+      Vector4d Ar = rot_to_quat(R);
+      Matrix<double, 7, 1> gamma {p(0), p(1), p(2), Ar(0), Ar(1), Ar(2), Ar(3)};
+      return gamma;
    }
 
-   def dual_quat_to_gamma(self, A) {
-      Ar = A[0]
-      Ad = A[1]
-      p = 2 * self.quat_product(Ad, self.conjugate(Ar))
-      gamma = np.hstack([p[1:4], Ar])
-      return gamma
+   Matrix<double, 7, 1> dual_quat_to_gamma(Matrix<double, 4, 2> A) {
+      Vector4d Ar = A(seq(0,3), 0);
+      Vector4d Ad = A(seq(0,3), 1);
+      Vector4d p = 2 * quat_prod(Ad, conjugate(Ar));
+      Matrix<double, 7, 1> gamma {p(1), p(2), p(3), Ar(0), Ar(1), Ar(2), Ar(3)};
+      return gamma;
    }
-   */
+   
 }
 
 #endif

@@ -6,6 +6,8 @@
 #include "transformation.h"
 #include "linalg.h"
 #include "Baxter.h"
+#include "manip.h"
+
 #include "../../eigen-3.4.0/Eigen/Dense"
 
 using namespace std;
@@ -14,8 +16,8 @@ using namespace Eigen;
 class Robot_Dynamics {
    public:
       Robot_Dynamics(Manip*);
-      
       Manip *manip_ptr;
+      
       int joints;
       MatrixXd axis_joints;
       MatrixXd q_joints;

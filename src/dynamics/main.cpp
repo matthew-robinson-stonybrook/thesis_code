@@ -8,8 +8,10 @@
 #include "Baxter.h"
 #include "mass_matrix2.h"
 #include "dynamics.h"
+#include "quat_math.h"
 #include "linalg.h"
 #include "transformation.h"
+#include "controller.h"
 
 #include "../../eigen-3.4.0/Eigen/Dense"
 
@@ -31,63 +33,58 @@ int main() {
    
    Robot_Dynamics baxter_dynamics(baxter_ptr);
    
-   
    baxter_dynamics.calc_mass_matrix();
    baxter_dynamics.calc_coriolis_matrix();
    baxter_dynamics.calc_gravity_term();
-   
    baxter_dynamics.calc_potential_energy();
    baxter_dynamics.calc_kinetic_energy();
-   /*
-   cout << "Baxter Mass Matrix" << endl;
-   cout << baxter_dynamics.mass_matrix << endl;
-   cout << "Baxter Coriolis Matrix" << endl;
-   cout << baxter_dynamics.coriolis_matrix << endl;
-   cout << "Baxter Gravity Term" << endl;
-   cout << baxter_dynamics.gravity_term << endl;   
-   */
-   
-
    baxter_ptr->set_joint_path(baxter_to_handle_csv);
- 
-   /*
-   for(int t{0}; t<=100; t++) {
-      // Calculate EoM
-      baxter_dynamics.calc_mass_matrix();
-      baxter_dynamics.calc_coriolis_matrix();
-      baxter_dynamics.calc_theta_ddot();
-      
-      // Calculate and display total energy
-      baxter_dynamics.calc_potential_energy();
-      baxter_dynamics.calc_kinetic_energy();
-      
-      cout << "KE: " << baxter_dynamics.T << endl;
-      cout << "PE: " <<  baxter_dynamics.V << endl;
-      cout << "Total Energy: " << baxter_dynamics.T + baxter_dynamics.V << endl;
-      
-      baxter_ptr->theta_ddots = baxter_dynamics.calc_theta_ddot();
-      cout << "Jointt Accel: " << endl;
-      cout << baxter_ptr->theta_ddots << endl;
-      
-      baxter_ptr->theta_dots += (baxter_ptr->theta_ddots); 
-      baxter_ptr->thetas += (baxter_ptr->theta_dots);
-   }
-   */
    
-   /*
-   cout << "Mass Matrix: " << endl;
-   cout << baxter_dynamics.mass_matrix << endl;
-   cout << " " << endl;
-   cout << "Joint Accelerations: " << endl;
-   cout << theta_ddot << endl;
-   cout << " " << endl;
-   cout << "Resulting Joint Torques From Robot Dynamics: " << endl;
-   cout << tau1 << endl;
-   cout << " " << endl;
-   cout << "Resulting Joint Torques From Mass Matrix2: " << endl;
-   cout << tau2 << endl;
-   cout << " " << endl;
-   */
+   // Baxter Impedence Controller
+   Controller baxter_ic = Controller(baxter_ptr);
+   
+   Vector2d n1 {1,3};
+   Vector2d n2 {2,5};
+   Matrix<double, 3, 2> v1 {
+      {0.1, 0.2},
+      {0.3, 0.4},
+      {0.5, 0.6}
+   };
+   Matrix<double, 3, 2> v2 {
+      {0.7, 0.8},
+      {0.9, 1.0},
+      {1.1, 1.2}
+   };
+   
+   double a = sqrt(pow(n1(0),2) + pow(v1(0,0),2) + pow(v1(1,0),2) + pow(v1(2,0),2));
+   double b = sqrt(pow(n1(1),2) + pow(v1(0,1),2) + pow(v1(1,1),2) + pow(v1(2,1),2));
+   double c = sqrt(pow(n2(0),2) + pow(v2(0,0),2) + pow(v1(1,0),2) + pow(v1(2,0),2));
+   double d = sqrt(pow(n2(1),2) + pow(v2(0,1),2) + pow(v1(1,1),2) + pow(v1(2,1),2));
+   
+   Matrix<double, 4, 2> dq1{
+      {n1(0)/a, n1(1)/b},
+      {v1(0,0)/a, v1(0,1)/b},
+      {v1(1,0)/a, v1(1,1)/b},
+      {v1(2,0)/a, v1(2,1)/b}
+   };
+
+   Matrix<double, 4, 2> dq2{
+      {n2(0)/c, n2(1)/d},
+      {v2(0,0)/c, v2(0,1)/d},
+      {v2(1,0)/c, v2(1,1)/d},
+      {v2(2,0)/c, v2(2,1)/d}
+   };
+   
+   Matrix4d g {
+      {0.707, -0.707, 0, 5},
+      {0.707, 0.707, 0, 7},
+      {0, 0, 1, 9.3},
+      {0, 0, 0, 1}
+   };
+   
+   cout << "G to dual quat" << endl;
+   cout << quat_math::g_to_dual_quat(g) << endl;
+   
    double ellapsed_us = ((clock() - tStart) * 1000000) / CLOCKS_PER_SEC;
    if(ellapsed_us <= 999999) {
       cout << "TIME: " << ellapsed_us << "s e-6" << endl;

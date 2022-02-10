@@ -31,9 +31,7 @@ int main() {
    baxter_ptr->thetas = {pi/2, 0, 0, 0, 0, 0, 0};
    baxter_ptr->theta_dots = {pi/40, pi/40, pi/40, pi/40, pi/40, pi/40, pi/40};
    
-   Robot_Dynamics *baxter_dynamics_ptr {null_ptr};
    Robot_Dynamics baxter_dynamics(baxter_ptr);
-   baxter_dynamics_ptr = *baxter_dynamics;
    
    baxter_dynamics.calc_spatial_manip_jac();
    baxter_dynamics.calc_mass_matrix();
@@ -44,7 +42,7 @@ int main() {
    baxter_ptr->set_joint_path(baxter_to_handle_csv);
    
    // Baxter Impedence Controller
-   Controller baxter_ic = Controller(baxter_dynamics_ptr);
+   Controller baxter_ic = Controller(&baxter_dynamics);
    baxter_ic.calc_jac_pseudo_inv();
    cout << "Pseudo Inverse: " << endl;
    cout << baxter_ic.jac_pseudo_inv << endl;

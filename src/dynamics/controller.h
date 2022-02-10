@@ -8,6 +8,7 @@
 #include "Baxter.h"
 #include "manip.h"
 #include "dynamics.h"
+#include "quat_math.h"
 
 #include "../../eigen-3.4.0/Eigen/Dense"
 
@@ -47,12 +48,16 @@ Controller::Controller(Robot_Dynamics* ptr) : dynamics_ptr{ptr} {
 }
 
 void Controller::calc_control_input() {
-   //jac_pseudo_inverse = 
+   Matrix4d ge = dynamics_ptr->forward_kin();
+   Matrix3d R = ge(seq(0,2), seq(0,2));
+   Vector3d p = ge(seq(0,2), 3);
+   // Orientation quaternion
+   Vector4d qr = quat_math::rot_to_quat(R);
+   xd = {p(0), p(1), p(2), qr(1), qr(2), qr(3)};
 }
 
 void Controller::calc_jac_pseudo_inv() {
-   const int js = dynamics_ptr->manip_ptr->get_joints();
-   Matrix<double, 6, joints> jac = dynamics_ptr->spatial_manip_jac;
+   MatrixXd jac = dynamics_ptr->spatial_manip_jac;
    jac_pseudo_inv = jac.transpose() * ((jac * jac.transpose()).inverse());
 }
 

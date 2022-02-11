@@ -28,12 +28,14 @@ int main() {
    // Define the baxter object, the 7 joint angle values for testing
    Baxter *baxter_ptr = new Baxter();
    baxter_ptr->thetas = {pi/2, -pi/8, pi/4, -pi/6, 0.1, 0.1, 0.1};
-   baxter_ptr->thetas = {pi/2, 0, 0, 0, 0, 0, 0};
+   baxter_ptr->thetas = {0, 0, 0, 0, 0, 0, 0};
    baxter_ptr->theta_dots = {pi/40, pi/40, pi/40, pi/40, pi/40, pi/40, pi/40};
+   baxter_ptr->theta_dots = {0, pi/40, 0, 0, 0, 0, 0};
    
    Robot_Dynamics baxter_dynamics(baxter_ptr);
    
-   baxter_dynamics.calc_spatial_manip_jac();
+   baxter_dynamics.calc_spatial_jac();
+   baxter_dynamics.calc_analytic_jac();
    baxter_dynamics.calc_mass_matrix();
    baxter_dynamics.calc_coriolis_matrix();
    baxter_dynamics.calc_gravity_term();
@@ -43,17 +45,22 @@ int main() {
    
    // Baxter Impedence Controller
    Controller baxter_ic = Controller(&baxter_dynamics);
-   baxter_ic.calc_jac_pseudo_inv();
-   cout << "Pseudo Inverse: " << endl;
-   cout << baxter_ic.jac_pseudo_inv << endl;
+   baxter_ic.calc_control_input();
    
+   cout << "Spatial: " << endl;
+   cout << baxter_dynamics.spatial_jac << endl;
+   cout << "Analytic: " << endl;
+   cout << baxter_dynamics.analytic_jac << endl;
    
-   double ellapsed_us = ((clock() - tStart) * 1000000) / CLOCKS_PER_SEC;
-   if(ellapsed_us <= 999999) {
-      cout << "TIME: " << ellapsed_us << "s e-6" << endl;
+   double ellapsed_time_us = ((clock() - tStart) * 1000000) / CLOCKS_PER_SEC;
+   if(ellapsed_time_us <= 999) {
+      cout << "TIME: " << ellapsed_time_us << "us" << endl;
    }
-   else {
-      cout << "TIME: " << ellapsed_us/1000 << "s e-3" << endl;
+   if(ellapsed_time_us > 999 && ellapsed_time_us <= 999999) {
+      cout << "TIME: " << ellapsed_time_us / 1000 << "ms" << endl;
+   }
+   if(ellapsed_time_us > 999999) {
+      cout << "TIME: " << ellapsed_time_us / 1000000 << "s" << endl;
    }
    return 0;
 }

@@ -10,27 +10,16 @@ using namespace std;
 using namespace Eigen;
    
 namespace linalg {
-   Matrix3d eye3 {
-   {1, 0, 0},
-   {0, 1, 0},
-   {0, 0, 1}
-   };
-   
-   Matrix4d eye4 {
-   {1, 0, 0, 0},
-   {0, 1, 0, 0},
-   {0, 0, 1, 0},
-   {0, 0, 0, 1},
-   };
-   
-   Matrix<double,6,6> eye6 {
-   {1, 0, 0, 0, 0, 0},
-   {0, 1, 0, 0, 0, 0},
-   {0, 0, 1, 0, 0, 0},
-   {0, 0, 0, 1, 0, 0},
-   {0, 0, 0, 0, 1, 0},
-   {0, 0, 0, 0, 0, 1},
-   };
+   // Identity matrices
+   Matrix3d eye3 {MatrixXd::Identity(3,3)};
+   Matrix4d eye4 {MatrixXd::Identity(4,4)};
+   Matrix<double,5,5> eye5 {MatrixXd::Identity(5,5)};
+   Matrix<double,6,6> eye6 {MatrixXd::Identity(6,6)};
+   // Zero Matrices
+   Matrix3d zero3 {MatrixXd::Zero(3,3)};
+   Matrix4d zero4 {MatrixXd::Zero(4,4)};
+   Matrix<double,5,5> zero5 {MatrixXd::Zero(5,5)};
+   Matrix<double,6,6> zero6 {MatrixXd::Zero(6,6)};
    
    Matrix3d skew3(Vector3d vec3) {
       Matrix3d s3 {

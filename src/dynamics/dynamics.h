@@ -23,7 +23,17 @@ class Robot_Dynamics {
       MatrixXd q_joints;
       MatrixXd twist_coords;
       
-      MatrixXd spatial_manip_jac;
+      Matrix4d ge;
+      // End effector position and orientation vector
+      Matrix<double, 6, 1> x {0, 0, 0, 0, 0, 0};
+      
+      
+      MatrixXd spatial_jac;
+      MatrixXd analytic_jac;
+      MatrixXd analytic_jac_pseudo_inv;
+      
+      // Spatial to analytic jacobian map
+      Matrix<double, 6, 6> A;
       
       vector <Matrix<double,6,6>> link_gmasss;
       vector <Matrix<double,6,6>> link_adjusted_gmasss;
@@ -52,9 +62,14 @@ class Robot_Dynamics {
       void calc_potential_energy();
       void calc_kinetic_energy();
       
-      void calc_spatial_manip_jac();
-      
-      Matrix4d forward_kin();
+      void calc_spatial_jac();
+      // NOTE the analytic jacobian is derived from the spatial jacobian
+      // So the spatial jac will first be calculated in function
+      void calc_analytic_jac();
+      void calc_analytic_jac_pseudo_inv();
+      // Map between spatial and analytic jacs
+      void calc_A();
+      void forward_kin();
       
 };
 
@@ -68,7 +83,7 @@ Robot_Dynamics::Robot_Dynamics(Manip* manip) : manip_ptr{manip} {
    mass_matrix.resize(manip_ptr->get_joints(), manip_ptr->get_joints());
    coriolis_matrix.resize(manip_ptr->get_joints(), manip_ptr->get_joints());
    gravity_term.resize(manip_ptr->get_joints(), 1);
-   spatial_manip_jac.resize(6, manip_ptr->get_joints());
+   spatial_jac.resize(6, manip_ptr->get_joints());
    
    calc_twist_coords();
    calc_link_gmasss();
@@ -88,13 +103,8 @@ void Robot_Dynamics::calc_twist_coords(){
       uj = axis_joints.row(joint);
       qj = q_joints.row(joint);
       cross = (-1 * uj).cross(qj);
-      
-      twist_coords(joint, 0) = cross(0);
-      twist_coords(joint, 1) = cross(1);
-      twist_coords(joint, 2) = cross(2);
-      twist_coords(joint, 3) = uj(0);
-      twist_coords(joint, 4) = uj(1);
-      twist_coords(joint, 5) = uj(2);
+      twist_coords(joint, seq(0,2)) = cross;
+      twist_coords(joint, seq(3,5)) = uj;
 
    }
 }
@@ -126,19 +136,8 @@ void Robot_Dynamics::calc_link_adjusted_gmasss() {
 
 // Should only be run in calc_gmasss() in contructor
 Matrix<double, 6, 6> Robot_Dynamics::calc_gmass(double mass, Matrix3d inertia) {
-   Matrix<double, 6, 6> gen_mass;
-   
-   for(int row{0}; row < 6; row++) {
-      for(int col{0}; col < 6; col++) {
-         if(row >= 3 && col >= 3) {
-            gen_mass(row,col) = inertia(row - 3, col - 3);
-         }
-         else {
-            gen_mass(row,col) = 0;
-         }
-      }
-   }
-   
+   Matrix<double, 6, 6> gen_mass {linalg::zero6};
+   gen_mass(seq(3,5), seq(3,5)) = inertia;
    gen_mass(0,0) = mass;
    gen_mass(1,1) = mass;
    gen_mass(2,2) = mass;
@@ -158,9 +157,7 @@ Matrix<double, 6, 6> Robot_Dynamics::calc_adjusted_gmass(Matrix<double, 6, 6> gm
    }
    MatrixXd p_link = manip_ptr->get_p_links().row(link);
    Matrix4d gsli = linalg::eye4;
-   gsli(0, 3) = p_link(0);
-   gsli(1, 3) = p_link(1);
-   gsli(2, 3) = p_link(2);
+   gsli(seq(0,2), 3) = p_link.transpose();
    gsli0 = gsli;
    
    Matrix<double,6,6> adj_gsli0_inv = g::adjoint(gsli0.inverse());
@@ -372,36 +369,46 @@ void Robot_Dynamics::calc_kinetic_energy() {
    T = a(0,0)/2;
 }
 
-void Robot_Dynamics::calc_spatial_manip_jac() {
+void Robot_Dynamics::calc_spatial_jac() {
    vector <Matrix4d> g1_is {linalg::eye4};
    for(int joint {0}; joint < manip_ptr->get_joints(); joint++) {
       
       double t = manip_ptr->get_thetas()(joint);
       Matrix4d transformation = g::twist(twist_coords.row(joint), t);
       g1_is.push_back(g1_is.at(joint) * transformation);
-      Matrix<double, 6, 6> adj = g::adjoint(g1_is.at(joint + 1));
+      Matrix<double, 6, 6> adj = g::adjoint(g1_is.at(joint));
       Matrix<double, 6, 1> twist_prime = adj * twist_coords.row(joint).transpose();
       
-      spatial_manip_jac(0, joint) = twist_prime(0);
-      spatial_manip_jac(1, joint) = twist_prime(1);
-      spatial_manip_jac(2, joint) = twist_prime(2);
-      spatial_manip_jac(3, joint) = twist_prime(3);
-      spatial_manip_jac(4, joint) = twist_prime(4);
-      spatial_manip_jac(5, joint) = twist_prime(5);
-      
+      spatial_jac(seq(0,5), joint) = twist_prime; 
    }
 }
 
-Matrix4d Robot_Dynamics::forward_kin() {
-   Matrix4d ge {linalg::eye4};
+void Robot_Dynamics::calc_analytic_jac() {
+   calc_spatial_jac();
+   calc_A();
+   analytic_jac = A * spatial_jac;
+}
+
+void Robot_Dynamics::calc_analytic_jac_pseudo_inv() {
+   analytic_jac_pseudo_inv = spatial_jac.transpose() * ((spatial_jac * spatial_jac.transpose()).inverse());
+}
+
+void Robot_Dynamics::calc_A() {
+   forward_kin();
+   Vector3d p = ge(seq(0,2), 3);
+   A = linalg::eye6;
+   Matrix3d p_hat = linalg::skew3(p);
+   A(seq(0,2), seq(3,5)) = -p_hat; 
+}
+
+void Robot_Dynamics::forward_kin() {
+   ge = linalg::eye4;
    double t;
    for (int joint {0}; joint < joints; joint++) {
       t = manip_ptr->get_thetas()(joint);
       ge *= g::twist(twist_coords.row(joint), t);
    }
    ge *= manip_ptr->get_gst0();
-   return ge;
 }
-
 
 #endif

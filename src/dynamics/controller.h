@@ -61,7 +61,12 @@ void Controller::calc_control_input() {
    
    MatrixXd t_dots = manip_ptr->get_theta_dots();
    dynamics_ptr->calc_analytic_jac();
+   // End-effector velocity term
    x_dot = dynamics_ptr->analytic_jac * t_dots;
+   
+   MatrixXd t_ddots = manip_ptr->get_theta_ddots();
+   dynamics_ptr->calc_analytic_jac_dot();
+   x_ddot = dynamics_ptr->analytic_jac * t_ddots + dynamics_ptr->analytic_jac_dot * t_dots;
    
    //Error Terms
    Matrix<double, 6, 1> xe = xd - x;

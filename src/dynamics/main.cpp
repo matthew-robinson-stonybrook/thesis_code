@@ -52,6 +52,14 @@ int main() {
    cout << "Analytic: " << endl;
    cout << baxter_dynamics.analytic_jac << endl;
    
+   Matrix<double, 6, 1> vs = baxter_dynamics.spatial_jac * baxter_ptr->theta_dots;
+   Matrix<double, 6, 1> va = baxter_dynamics.analytic_jac * baxter_ptr->theta_dots;
+   
+   cout << "Spatial Vel" << endl;
+   cout << vs << endl;
+   cout << "Analytic vel" << endl;
+   cout << va << endl;
+   
    double ellapsed_time_us = ((clock() - tStart) * 1000000) / CLOCKS_PER_SEC;
    if(ellapsed_time_us <= 999) {
       cout << "TIME: " << ellapsed_time_us << "us" << endl;

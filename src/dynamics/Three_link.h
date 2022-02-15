@@ -80,6 +80,13 @@ class Three_link: public Manip{
          {0,l1+r2,l0}
       };
       
+      Matrix4d gst0 {
+         {1, 0, 0, 0},
+         {0, 1, 0, l1 + l2},
+         {0, 0, 1, l0},
+         {0, 0, 0, 1}
+      };
+      
       // Returns total joints
       virtual int get_joints() {return joints;}
       
@@ -101,6 +108,9 @@ class Three_link: public Manip{
       virtual MatrixXd get_axis_joints() {return axis_joints;}
       virtual MatrixXd get_q_joints() {return q_joints;}
       virtual MatrixXd get_p_links() {return p_links;}
+     
+      // Return initial end-effector transformation matirx
+      virtual Matrix4d get_gst0() {return gst0;}
       
       MatrixXd reference_twist_coords();
       Matrix3d reference_mass_matrix();

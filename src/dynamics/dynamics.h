@@ -30,6 +30,7 @@ class Robot_Dynamics {
       
       MatrixXd spatial_jac;
       MatrixXd analytic_jac;
+      MatrixXd analytic_jac_dot;
       MatrixXd analytic_jac_pseudo_inv;
       
       // Spatial to analytic jacobian map
@@ -66,6 +67,7 @@ class Robot_Dynamics {
       // NOTE the analytic jacobian is derived from the spatial jacobian
       // So the spatial jac will first be calculated in function
       void calc_analytic_jac();
+      void calc_analytic_jac_dot();
       void calc_analytic_jac_pseudo_inv();
       // Map between spatial and analytic jacs
       void calc_A();
@@ -304,6 +306,7 @@ void Robot_Dynamics::calc_coriolis_matrix() {
    }
 }
 
+
 void Robot_Dynamics::calc_gravity_term() {
    Vector4d g {0, 0, 9.81, 0};
    vector <Matrix4d> g1_is {linalg::eye4};
@@ -387,6 +390,12 @@ void Robot_Dynamics::calc_analytic_jac() {
    calc_spatial_jac();
    calc_A();
    analytic_jac = A * spatial_jac;
+}
+
+void Robot_Dynamics::calc_analytic_jac_dot() {
+   calc_spatial_jac();
+   calc_A();
+   analytic_jac_dot = A * spatial_jac;
 }
 
 void Robot_Dynamics::calc_analytic_jac_pseudo_inv() {

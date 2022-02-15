@@ -29,6 +29,7 @@ class Robot_Dynamics {
       
       
       MatrixXd spatial_jac;
+      MatrixXd spatial_jac_dot;
       MatrixXd analytic_jac;
       MatrixXd analytic_jac_dot;
       MatrixXd analytic_jac_pseudo_inv;
@@ -64,6 +65,7 @@ class Robot_Dynamics {
       void calc_kinetic_energy();
       
       void calc_spatial_jac();
+      void calc_spatial_jac_dot();
       // NOTE the analytic jacobian is derived from the spatial jacobian
       // So the spatial jac will first be calculated in function
       void calc_analytic_jac();
@@ -85,7 +87,11 @@ Robot_Dynamics::Robot_Dynamics(Manip* manip) : manip_ptr{manip} {
    mass_matrix.resize(manip_ptr->get_joints(), manip_ptr->get_joints());
    coriolis_matrix.resize(manip_ptr->get_joints(), manip_ptr->get_joints());
    gravity_term.resize(manip_ptr->get_joints(), 1);
+   
    spatial_jac.resize(6, manip_ptr->get_joints());
+   spatial_jac_dot.resize(6, manip_ptr->get_joints());
+   analytic_jac.resize(6, manip_ptr->get_joints());
+   analytic_jac_dot.resize(6, manip_ptr->get_joints());
    
    calc_twist_coords();
    calc_link_gmasss();
@@ -306,7 +312,6 @@ void Robot_Dynamics::calc_coriolis_matrix() {
    }
 }
 
-
 void Robot_Dynamics::calc_gravity_term() {
    Vector4d g {0, 0, 9.81, 0};
    vector <Matrix4d> g1_is {linalg::eye4};
@@ -383,6 +388,35 @@ void Robot_Dynamics::calc_spatial_jac() {
       Matrix<double, 6, 1> twist_prime = adj * twist_coords.row(joint).transpose();
       
       spatial_jac(seq(0,5), joint) = twist_prime; 
+   }
+}
+
+void Robot_Dynamics::calc_spatial_jac_dot() {
+   calc_spatial_jac();
+   MatrixXd t_dot = manip_ptr->get_theta_dots();
+   cout << "Theta Dot: " << endl;
+   cout << t_dot << endl;
+   Matrix<double, 6, 1> sum;
+   for(int col{0}; col < joints; col++) {
+      sum = {0, 0, 0, 0, 0, 0};
+      /*
+      This next for loop is essentially creating the twist jacobian and
+      multiplying by the joint velocity vector for this twist 'col'
+      */
+      for(int joint{0}; joint < joints; joint++) {
+         if(joint < col) {
+            // Column 'joint' of the current spat jac
+            Matrix<double, 6, 1> twistj_prime {spatial_jac.col(joint)};
+            // Column 'col' of the current spat jac
+            Matrix<double, 6, 1> twisti_prime {spatial_jac.col(col)};
+            // Twist i prime derivative wrt theta j is Lie Bracket j,i
+            Matrix<double, 6, 1> twisti_dj = g::lie_bracket(twistj_prime, twisti_prime);
+            
+            // Twist Jacobian Matrix times joint vel vector
+            sum += twisti_dj * t_dot(joint);
+         }
+         spatial_jac_dot(seq(0,5), col) = sum;
+      }
    }
 }
 

@@ -30,11 +30,12 @@ int main() {
    baxter_ptr->thetas = {pi/2, -pi/8, pi/4, -pi/6, 0.1, 0.1, 0.1};
    baxter_ptr->thetas = {0, 0, 0, 0, 0, 0, 0};
    baxter_ptr->theta_dots = {pi/40, pi/40, pi/40, pi/40, pi/40, pi/40, pi/40};
-   baxter_ptr->theta_dots = {0, pi/40, 0, 0, 0, 0, 0};
+   baxter_ptr->theta_dots = {0, 0, 0, 0, pi/40, 0, 0};
    
    Robot_Dynamics baxter_dynamics(baxter_ptr);
    
    baxter_dynamics.calc_spatial_jac();
+   baxter_dynamics.calc_spatial_jac_dot();
    baxter_dynamics.calc_analytic_jac();
    baxter_dynamics.calc_mass_matrix();
    baxter_dynamics.calc_coriolis_matrix();
@@ -51,14 +52,17 @@ int main() {
    cout << baxter_dynamics.spatial_jac << endl;
    cout << "Analytic: " << endl;
    cout << baxter_dynamics.analytic_jac << endl;
+   cout << "Spatial Dot: " << endl;
+   cout << baxter_dynamics.spatial_jac_dot << endl;
    
+   /*
    Matrix<double, 6, 1> vs = baxter_dynamics.spatial_jac * baxter_ptr->theta_dots;
    Matrix<double, 6, 1> va = baxter_dynamics.analytic_jac * baxter_ptr->theta_dots;
-   
    cout << "Spatial Vel" << endl;
    cout << vs << endl;
    cout << "Analytic vel" << endl;
    cout << va << endl;
+   */ 
    
    double ellapsed_time_us = ((clock() - tStart) * 1000000) / CLOCKS_PER_SEC;
    if(ellapsed_time_us <= 999) {

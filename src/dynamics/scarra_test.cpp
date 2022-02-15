@@ -1,11 +1,10 @@
 #include<iostream>
 #include<time.h>
 
-#include "Three_link.h"
+#include "manips/Three_link.h"
 #include "dynamics.h"
 #include "linalg.h"
 #include "transformation.h"
-#include "mass_matrix2.h"
 
 #include "../../eigen-3.4.0/Eigen/Dense"
 

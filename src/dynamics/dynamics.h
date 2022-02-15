@@ -5,8 +5,7 @@
 #include<vector>
 #include "transformation.h"
 #include "linalg.h"
-#include "Baxter.h"
-#include "manip.h"
+#include "manips/Baxter.h"
 
 #include "../../eigen-3.4.0/Eigen/Dense"
 
@@ -36,6 +35,7 @@ class Robot_Dynamics {
       
       // Spatial to analytic jacobian map
       Matrix<double, 6, 6> A;
+      Matrix<double, 6, 6> A_dot;
       
       vector <Matrix<double,6,6>> link_gmasss;
       vector <Matrix<double,6,6>> link_adjusted_gmasss;
@@ -73,6 +73,7 @@ class Robot_Dynamics {
       void calc_analytic_jac_pseudo_inv();
       // Map between spatial and analytic jacs
       void calc_A();
+      void calc_A_dot();
       void forward_kin();
       
 };
@@ -92,6 +93,7 @@ Robot_Dynamics::Robot_Dynamics(Manip* manip) : manip_ptr{manip} {
    spatial_jac_dot.resize(6, manip_ptr->get_joints());
    analytic_jac.resize(6, manip_ptr->get_joints());
    analytic_jac_dot.resize(6, manip_ptr->get_joints());
+   analytic_jac_pseudo_inv.resize(6, manip_ptr->get_joints());
    
    calc_twist_coords();
    calc_link_gmasss();
@@ -377,6 +379,16 @@ void Robot_Dynamics::calc_kinetic_energy() {
    T = a(0,0)/2;
 }
 
+void Robot_Dynamics::forward_kin() {
+   ge = linalg::eye4;
+   double t;
+   for (int joint {0}; joint < joints; joint++) {
+      t = manip_ptr->get_thetas()(joint);
+      ge *= g::twist(twist_coords.row(joint), t);
+   }
+   ge *= manip_ptr->get_gst0();
+}
+
 void Robot_Dynamics::calc_spatial_jac() {
    vector <Matrix4d> g1_is {linalg::eye4};
    for(int joint {0}; joint < manip_ptr->get_joints(); joint++) {
@@ -390,6 +402,7 @@ void Robot_Dynamics::calc_spatial_jac() {
       spatial_jac(seq(0,5), joint) = twist_prime; 
    }
 }
+
 
 void Robot_Dynamics::calc_spatial_jac_dot() {
    calc_spatial_jac();
@@ -428,8 +441,10 @@ void Robot_Dynamics::calc_analytic_jac() {
 
 void Robot_Dynamics::calc_analytic_jac_dot() {
    calc_spatial_jac();
+   calc_spatial_jac_dot();
    calc_A();
-   analytic_jac_dot = A * spatial_jac;
+   calc_A_dot();
+   analytic_jac_dot = A_dot * spatial_jac + A * spatial_jac_dot;
 }
 
 void Robot_Dynamics::calc_analytic_jac_pseudo_inv() {
@@ -444,14 +459,14 @@ void Robot_Dynamics::calc_A() {
    A(seq(0,2), seq(3,5)) = -p_hat; 
 }
 
-void Robot_Dynamics::forward_kin() {
-   ge = linalg::eye4;
-   double t;
-   for (int joint {0}; joint < joints; joint++) {
-      t = manip_ptr->get_thetas()(joint);
-      ge *= g::twist(twist_coords.row(joint), t);
-   }
-   ge *= manip_ptr->get_gst0();
+void Robot_Dynamics::calc_A_dot() {
+   MatrixXd t_dot = manip_ptr->get_theta_dots();
+   Matrix<double, 6, 1> va = analytic_jac * t_dot;
+   Vector3d p_dot = va(seq(0,2));
+   Matrix3d p_dot_hat = linalg::skew3(p_dot);
+   
+   A_dot = linalg::zero6;
+   A_dot(seq(0,2), seq(3,5)) = p_dot_hat;
 }
 
 #endif

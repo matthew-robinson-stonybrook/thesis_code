@@ -5,8 +5,6 @@
 #include<vector>
 #include "transformation.h"
 #include "linalg.h"
-#include "Baxter.h"
-#include "manip.h"
 #include "dynamics.h"
 #include "quat_math.h"
 
@@ -27,18 +25,32 @@ class Controller {
       Matrix<double, 6, 6> Kd {linalg::eye6};
       Matrix<double, 6, 6> Kp {linalg::eye6};
       
-      // Position/orientation vector and desired pos/or vector
+      // End-effector position/orientation vector (xe) 
+      // Desired pos/or vector (xd)
       // The rest follow same logic (x_dot and x_ddot)
-      Matrix<double, 6, 1> x {0, 0, 0, 0, 0, 0};
+      Matrix<double, 6, 1> xe {0, 0, 0, 0, 0, 0};
       Matrix<double, 6, 1> xd {0, 0, 0, 0, 0, 0};
-      Matrix<double, 6, 1> x_dot {0, 0, 0, 0, 0, 0};
+      Matrix<double, 6, 1> xe_dot {0, 0, 0, 0, 0, 0};
       Matrix<double, 6, 1> xd_dot {0, 0, 0, 0, 0, 0};
-      Matrix<double, 6, 1> x_ddot {0, 0, 0, 0, 0, 0};
+      Matrix<double, 6, 1> xe_ddot {0, 0, 0, 0, 0, 0};
       Matrix<double, 6, 1> xd_ddot {0, 0, 0, 0, 0, 0};
+      
+      // End effector wrenches
+      Matrix<double, 6, 1> he {0, 0, 0, 0, 0, 0};
+      Matrix<double, 6, 1> ha {0, 0, 0, 0, 0, 0};
+      
+      // Joints
+      MatrixXd qe;
+      MatrixXd qd;
+      MatrixXd qe_dot;
+      MatrixXd qd_dot;
+      MatrixXd qe_ddot;
+      MatrixXd qd_ddot;
       
       // Control input
       MatrixXd y;
       void calc_control_input();
+      //void calc_
 };
 
 Controller::Controller(Robot_Dynamics* ptr) : dynamics_ptr{ptr} {
@@ -50,6 +62,12 @@ Controller::Controller(Robot_Dynamics* ptr) : dynamics_ptr{ptr} {
 }
 
 void Controller::calc_control_input() {
+   //Retrieve joint pos, vel, acc
+   qe = manip_ptr->get_thetas();
+   qe_dot = manip_ptr->get_theta_dots();
+   qe_ddot = manip_ptr->get_theta_ddots();
+   
+   // Forward kinematics to retrieve position and orientation vector
    dynamics_ptr->forward_kin();
    Matrix4d ge = dynamics_ptr->ge;
    Matrix3d R = ge(seq(0,2), seq(0,2));
@@ -57,23 +75,30 @@ void Controller::calc_control_input() {
    // Orientation quaternion
    Vector4d qr = quat_math::rot_to_quat(R);
    // Current configuration (position and orientation)
-   x = {p(0), p(1), p(2), qr(1), qr(2), qr(3)};
+   xe = {p(0), p(1), p(2), qr(1), qr(2), qr(3)};
    
-   MatrixXd t_dots = manip_ptr->get_theta_dots();
+   // Velocity Kinematics
    dynamics_ptr->calc_analytic_jac();
    // End-effector velocity term
-   x_dot = dynamics_ptr->analytic_jac * t_dots;
+   xe_dot = dynamics_ptr->analytic_jac * qe_dot;
    
-   MatrixXd t_ddots = manip_ptr->get_theta_ddots();
    dynamics_ptr->calc_analytic_jac_dot();
-   x_ddot = dynamics_ptr->analytic_jac * t_ddots + dynamics_ptr->analytic_jac_dot * t_dots;
+   xe_ddot = dynamics_ptr->analytic_jac * qe_ddot + dynamics_ptr->analytic_jac_dot * qe_dot;
    
    //Error Terms
-   Matrix<double, 6, 1> xe = xd - x;
-   Matrix<double, 6, 1> xe_dot = xd_dot - x_dot;
+   Matrix<double, 6, 1> x = xd - xe;
+   Matrix<double, 6, 1> x_dot = xd_dot - xe_dot;
+   Matrix<double, 6, 1> x_ddot = xd_ddot - xe_ddot;
+   
+   cout << "X error: " << endl;
+   cout << x << endl;
+   cout << "X_dot error: " << endl;
+   cout << x_dot << endl;
+   cout << "X ddot error: " << endl;
+   cout << x_ddot << endl;
    
    dynamics_ptr->calc_analytic_jac_pseudo_inv();
-   //y = jac_pseudo_inv() * Md.inverse() * (Md * xd_ddot + Kd * xe_dot + Kp * xe - Md * analytic_jac_dot * 
+   y = dynamics_ptr->analytic_jac_pseudo_inv * Md.inverse() * (Md * xd_ddot + Kd * x_dot + Kp * x - Md * dynamics_ptr->analytic_jac_dot * qe_dot - ha);
    
 }
 

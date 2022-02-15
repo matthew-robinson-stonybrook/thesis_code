@@ -1,21 +1,25 @@
-#ifndef _PANDA_H_
-#define _PANDA_H_
+#ifndef _BAXTER_H_
+#define _BAXTER_H_
 
 #include<iostream>
+#include<fstream>
+#include<string>
+#include<vector>
+#include<sstream>
 #include<vector>
 
 #include "manip.h"
-#include "../../eigen-3.4.0/Eigen/Dense"
+#include "../../../eigen-3.4.0/Eigen/Dense"
 
 using namespace std;
 using namespace Eigen;
 
-class Panda: public Manip{
+class Baxter: public Manip{
    public:
       const double pi = 3.14159265;
       int joints = 7;
       
-      Panda();
+      Baxter();
       
       double l0 = 0.27035;
       double l1= 0.069;
@@ -25,13 +29,6 @@ class Panda: public Manip{
       double l5 = 0.010;
       double l6 = 0.37442;
       double l7 = 0.22953;
-      
-      double d1 = 0.333;
-      double d3 = 0.316;
-      double a4 = 0.0825;
-      double d5 = 0.384;
-      double a7 = 0.088;
-      double d8 = 0.107;
 
       double Il1xx = 0.0470910226;
       double Il1xy = -0.00614870039;
@@ -137,24 +134,26 @@ class Panda: public Manip{
       Matrix<double,7,1> theta_dots {0,0,0,0,0,0,0};
       Matrix<double,7,1> theta_ddots {0,0,0,0,0,0,0};
       
+      vector <Matrix<double, 7, 1>> joint_path;
+      
       MatrixXd axis_joints {
    	   {0, 0, 1}, 
-   	   {0, 1, 0},
-   	   {0, 0, 1},
-   	   {0, -1, 0},
-   	   {0, 0, 1},
-  	   {0, -1, 0},
-   	   {0, 0, -1},
+   	   {-1 / sqrt(2), 1 / sqrt(2), 0},
+   	   {1 / sqrt(2), 1 / sqrt(2), 0},
+   	   {-1 / sqrt(2), 1 / sqrt(2), 0},
+   	   {1 / sqrt(2), 1 / sqrt(2), 0},
+  	   {-1 / sqrt(2), 1 / sqrt(2), 0},
+   	   {1 / sqrt(2), 1 / sqrt(2), 0},
    	   };  
    	
       MatrixXd q_joints {
          {0, 0, 0},
-         {0, 0, d1},
-         {0, 0, 0},
-         {a4, 0, d1 + d3},
-         {0, 0, 0},
-         {0, 0, d1 + d3 + d5},
-         {a7, 0, d1 + d3 + d5}
+         {l1 * cos(pi/4), l1 * sin(pi/4), l0},
+         {0, 0, l0},
+         {(l1 + l2) * cos(pi/4), (l1 + l2) * sin(pi/4), l0-l3},
+         {(l1 + l2) * cos(pi/4), (l1 + l2) * sin(pi/4), l0-l3},
+         {(l1 + l2 + l4) * cos(pi/4), (l1 + l2 + l4) * sin(pi/4), l0-l3-l5},
+         {(l1 + l2 + l4) * cos(pi/4), (l1 + l2 + l4) * sin(pi/4), l0-l3-l5}
       };
       
       MatrixXd p_links {
@@ -177,7 +176,14 @@ class Panda: public Manip{
          {(l1 + l2 + l4 + l7/4) * cos(pi/4), (l1 + l2 + l4 + l7/4) * sin(pi/4), l0-l3-l5}
       };
       
-      virtual ~Baxter() {cout << "Panda:: destructor" << endl;}
+      Matrix4d gst0 {
+         {1/sqrt(2), 1/sqrt(2), 0, (l1 + l2 + l4 + l7) * cos(pi/4)},
+         {-1/sqrt(2), 1/sqrt(2), 0, (l1 + l2 + l4 + l7) * sin(pi/4)},
+         {0, 0, 1, l0 - l3 - l5},
+         {0, 0, 0, 1}
+      };
+      
+      virtual ~Baxter() {cout << "Baxter:: destructor" << endl;}
       
       // Returns total joints
       virtual int get_joints() {return joints;}
@@ -201,12 +207,34 @@ class Panda: public Manip{
       virtual MatrixXd get_q_joints() {return q_joints;}
       virtual MatrixXd get_p_links() {return p_links;}
       
-
+      // Return initial end-effector transformation matirx
+      virtual Matrix4d get_gst0() {return gst0;}
+      
+      virtual void set_joint_path(string);
+      
 };
 
-Panda::Panda(){
+Baxter::Baxter(){
    cout << "Baxter:: constructor" << endl;
 };
+
+void Baxter::set_joint_path(string file_name) {
+   string line, theta;
+   fstream file (file_name, ios::in);
+   if(file.is_open()) {
+      while(getline(file, line)) {
+         stringstream str(line);
+         
+         Matrix<double, 7, 1> config {0, 0, 0, 0, 0, 0, 0};
+         int joint {0};
+         while(getline(str, theta, ',')) {
+            config(joint) = stod(theta);
+            joint += 1;
+         }
+         joint_path.push_back(config);
+      }
+   }
+}
 
 
 #endif

@@ -1,19 +1,19 @@
-#ifndef _SCARRA_H_
-#define _SCARRA_H_
+#ifndef _THREE_LINK_H_
+#define _THREE_LINK_H_
 
 #include<iostream>
 #include<vector>
 
 #include "manip.h"
-#include "../../eigen-3.4.0/Eigen/Dense"
+#include "../../../eigen-3.4.0/Eigen/Dense"
 
 using namespace std;
 using namespace Eigen;
 
-class Scarra: public Manip{
+class Three_link: public Manip{
    public:
-      Scarra();
-      int joints = 4;
+      Three_link();
+      int joints = 3;
       
       // Link and motor inertia tensors
       
@@ -44,26 +44,17 @@ class Scarra: public Manip{
          {0, 0, Iz3}
       };
       
-      double Ix4 = 0.8;
-      double Iy4 = 0.6;
-      double Iz4 = 0.4;
-      Matrix3d Il4 {
-         {Ix4, 0, 0},
-         {0, Iy4, 0},
-         {0, 0, Iz4}
-      };
-      
-      vector <Matrix3d> Ils {Il1, Il2, Il3, Il4};
-      vector <Matrix3d> Ims {Il1, Il2, Il3, Il4};
+      vector <Matrix3d> Ils {Il1, Il2, Il3};
+      vector <Matrix3d> Ims {Il1, Il2, Il3};
       
       // Link and motor masses
-      vector <double> mls {3.3,2.6,1.8, 0.6};
-      vector <double> mms {3.3,2.6,1.8, 0.6};
+      vector <double> mls {1.3,2.6,4.8};
+      vector <double> mms {1.3,2.6,4.8};
       vector <double> krs {1,1,1};
           
-      Matrix<double,3,1> thetas {0,0,0,0};
-      Matrix<double,3,1> theta_dots {0,0,0,0};
-      Matrix<double,3,1> theta_ddots {0,0,0,0};
+      Matrix<double,3,1> thetas {0,0,0};
+      Matrix<double,3,1> theta_dots {0,0,0};
+      Matrix<double,3,1> theta_ddots {0,0,0};
       
       double r0 = 0.3;
       double l0 = 0.6;
@@ -75,20 +66,25 @@ class Scarra: public Manip{
       
       MatrixXd axis_joints {
          {0,0,1},
-         {0,0,1},
-         {0,0,1},
-         {0,0,1}
+         {-1,0,0},
+         {-1,0,0}
       };
       MatrixXd q_joints{
          {0,0,0},
-         {0,l1,0},
-         {0,l1+l2, 0},
-         {0,l1+l2, 0}
+         {0,0,l0},
+         {0,l1,l0}
       };
       MatrixXd p_links{
          {0,0,r0},
          {0,r1,l0},
          {0,l1+r2,l0}
+      };
+      
+      Matrix4d gst0 {
+         {1, 0, 0, 0},
+         {0, 1, 0, l1 + l2},
+         {0, 0, 1, l0},
+         {0, 0, 0, 1}
       };
       
       // Returns total joints
@@ -112,17 +108,21 @@ class Scarra: public Manip{
       virtual MatrixXd get_axis_joints() {return axis_joints;}
       virtual MatrixXd get_q_joints() {return q_joints;}
       virtual MatrixXd get_p_links() {return p_links;}
+     
+      // Return initial end-effector transformation matirx
+      virtual Matrix4d get_gst0() {return gst0;}
       
       MatrixXd reference_twist_coords();
       Matrix3d reference_mass_matrix();
       Matrix3d reference_coriolis_matrix();
+      Vector3d reference_gravity_term();
 };
 
-Scarra::Scarra() {
-   cout << "Scarra Contructor" << endl;
+Three_link::Three_link() {
+   cout << "Three_link Contructor" << endl;
 }
 
-MatrixXd Scarra::reference_twist_coords(){
+MatrixXd Three_link::reference_twist_coords(){
    Matrix<double,3,6> twist_coords {
       {0,0,0,0,0,1},
       {0,-l0,0,-1,0,0},
@@ -131,7 +131,7 @@ MatrixXd Scarra::reference_twist_coords(){
    return twist_coords;
 }
 
-Matrix3d Scarra::reference_mass_matrix() {
+Matrix3d Three_link::reference_mass_matrix() {
    double t1 = thetas(0);
    double t2 = thetas(1);
    double t3 = thetas(2);
@@ -157,7 +157,7 @@ Matrix3d Scarra::reference_mass_matrix() {
    return mass;
 }
 
-Matrix3d Scarra::reference_coriolis_matrix() {
+Matrix3d Three_link::reference_coriolis_matrix() {
    double t1 = thetas(0);
    double t2 = thetas(1);
    double t3 = thetas(2);
@@ -204,6 +204,26 @@ Matrix3d Scarra::reference_coriolis_matrix() {
       {c31, c32, c33}
    };
    return coriolis_matrix;
+}
+
+Vector3d Three_link::reference_gravity_term() {
+   double t1 = thetas(0);
+   double t2 = thetas(1);
+   double t3 = thetas(2);
+   double m1 = mls.at(0);
+   double m2 = mls.at(1);
+   double m3 = mls.at(2);
+   
+   double g = 9.81;
+   
+   double g1 = 0;
+   double g2 = -g * ((m2 * r1 + m3 * (l1+r2)) * cos(t2) + m3 * r2 * cos(t2 + t3));
+   //double g2 = -(m2*g*r1+m3*g*l1)*cos(t2) - m3*r2*cos(t2+t3);
+   double g3 = -m3*g*r2*cos(t2+t3);
+   
+   Vector3d gravity_term {g1, g2, g3};
+   return gravity_term;
+
 }
 
 

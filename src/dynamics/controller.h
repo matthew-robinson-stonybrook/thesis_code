@@ -40,6 +40,8 @@ class Controller {
       Matrix<double, 6, 1> ha {0, 0, 0, 0, 0, 0};
       
       // Joints
+      // qe is current joint configuration 
+      // qd is desired joint configuration
       MatrixXd qe;
       MatrixXd qd;
       MatrixXd qe_dot;
@@ -49,8 +51,9 @@ class Controller {
       
       // Control input
       MatrixXd y;
+      MatrixXd u;
       void calc_control_input();
-      //void calc_
+      void calc_control_torque();
 };
 
 Controller::Controller(Robot_Dynamics* ptr) : dynamics_ptr{ptr} {
@@ -59,6 +62,7 @@ Controller::Controller(Robot_Dynamics* ptr) : dynamics_ptr{ptr} {
    
    joints = manip_ptr->get_joints();
    y.resize(manip_ptr->get_joints(), 1);
+   u.resize(manip_ptr->get_joints(), 1);
 }
 
 void Controller::calc_control_input() {
@@ -82,6 +86,7 @@ void Controller::calc_control_input() {
    // End-effector velocity term
    xe_dot = dynamics_ptr->analytic_jac * qe_dot;
    
+   // Acceleration term
    dynamics_ptr->calc_analytic_jac_dot();
    xe_ddot = dynamics_ptr->analytic_jac * qe_ddot + dynamics_ptr->analytic_jac_dot * qe_dot;
    
@@ -90,16 +95,20 @@ void Controller::calc_control_input() {
    Matrix<double, 6, 1> x_dot = xd_dot - xe_dot;
    Matrix<double, 6, 1> x_ddot = xd_ddot - xe_ddot;
    
-   cout << "X error: " << endl;
-   cout << x << endl;
-   cout << "X_dot error: " << endl;
-   cout << x_dot << endl;
-   cout << "X ddot error: " << endl;
-   cout << x_ddot << endl;
-   
    dynamics_ptr->calc_analytic_jac_pseudo_inv();
    y = dynamics_ptr->analytic_jac_pseudo_inv * Md.inverse() * (Md * xd_ddot + Kd * x_dot + Kp * x - Md * dynamics_ptr->analytic_jac_dot * qe_dot - ha);
    
+}
+
+
+// Make sure to calculate dynamics matrices and terms first
+void Controller::calc_control_torque() {
+   MatrixXd B = dynamics_ptr->mass_matrix;
+   MatrixXd C = dynamics_ptr->coriolis_matrix;
+   MatrixXd G = dynamics_ptr->gravity_term;
+   MatrixXd J = dynamics_ptr->spatial_jac;
+   
+   u = B * y + C * manip_ptr->get_theta_dots() + G + J.transpose() * he;
 }
 
 #endif

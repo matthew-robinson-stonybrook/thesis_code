@@ -28,6 +28,8 @@ class Manip {
       
       MatrixXd axis_joints;
       MatrixXd q_joints;
+      MatrixXd twist_coords;
+      
       MatrixXd p_links;
       
       Matrix4d gst0;
@@ -50,6 +52,8 @@ class Manip {
       
       virtual MatrixXd get_axis_joints()=0;
       virtual MatrixXd get_q_joints()=0;
+      virtual MatrixXd get_twist_coords()=0;
+      
       virtual MatrixXd get_p_links()=0;
 
       virtual Matrix4d get_gst0()=0;

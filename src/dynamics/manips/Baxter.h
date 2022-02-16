@@ -9,6 +9,7 @@
 #include<vector>
 
 #include "manip.h"
+#include "../transformation.h"
 #include "../../../eigen-3.4.0/Eigen/Dense"
 
 using namespace std;
@@ -136,7 +137,7 @@ class Baxter: public Manip{
       
       vector <Matrix<double, 7, 1>> joint_path;
       
-      MatrixXd axis_joints {
+      Matrix<double, 7, 3> axis_joints {
    	   {0, 0, 1}, 
    	   {-1 / sqrt(2), 1 / sqrt(2), 0},
    	   {1 / sqrt(2), 1 / sqrt(2), 0},
@@ -146,7 +147,7 @@ class Baxter: public Manip{
    	   {1 / sqrt(2), 1 / sqrt(2), 0},
    	   };  
    	
-      MatrixXd q_joints {
+      Matrix<double, 7, 3> q_joints {
          {0, 0, 0},
          {l1 * cos(pi/4), l1 * sin(pi/4), l0},
          {0, 0, l0},
@@ -155,6 +156,8 @@ class Baxter: public Manip{
          {(l1 + l2 + l4) * cos(pi/4), (l1 + l2 + l4) * sin(pi/4), l0-l3-l5},
          {(l1 + l2 + l4) * cos(pi/4), (l1 + l2 + l4) * sin(pi/4), l0-l3-l5}
       };
+      
+      Matrix<double, 7, 6> twist_coords;
       
       MatrixXd p_links {
          {0, 0, l0/2},
@@ -205,17 +208,34 @@ class Baxter: public Manip{
       // Returns joint configs, vector to joint axes, and vec to link CoM
       virtual MatrixXd get_axis_joints() {return axis_joints;}
       virtual MatrixXd get_q_joints() {return q_joints;}
+      virtual MatrixXd get_twist_coords() {return twist_coords;}
+      
       virtual MatrixXd get_p_links() {return p_links;}
       
       // Return initial end-effector transformation matirx
       virtual Matrix4d get_gst0() {return gst0;}
       
-      virtual void set_joint_path(string);
+      Matrix4d forward_kin(MatrixXd q);
+      void set_joint_path(string);
       
 };
 
 Baxter::Baxter(){
    cout << "Baxter:: constructor" << endl;
+   Vector3d cross;
+   Vector3d uj;
+   Vector3d qj;
+   int t;
+   
+   for (int joint = 0; joint < joints; joint++) {
+      uj = axis_joints.row(joint);
+      qj = q_joints.row(joint);
+      cross = (-1 * uj).cross(qj);
+      twist_coords(joint, seq(0,2)) = cross;
+      twist_coords(joint, seq(3,5)) = uj;
+   }
+   
+   
 };
 
 void Baxter::set_joint_path(string file_name) {
@@ -234,6 +254,17 @@ void Baxter::set_joint_path(string file_name) {
          joint_path.push_back(config);
       }
    }
+}
+
+Matrix4d Baxter::forward_kin(MatrixXd q) {
+   Matrix4d ge = linalg::eye4;
+   double t;
+   for (int joint {0}; joint < joints; joint++) {
+      t = q(joint);
+      ge *= g::twist(twist_coords.row(joint), t);
+   }
+   ge *= get_gst0();
+   return ge;
 }
 
 

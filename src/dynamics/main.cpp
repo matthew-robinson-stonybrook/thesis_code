@@ -50,6 +50,8 @@ int main() {
    cout << "Control Input: " << endl;
    cout << baxter_ic.y << endl;
    
+   cout << "Control Torque: " << endl;
+   cout << baxter_ic.u << endl;
    /*
    cout << "Spatial: " << endl;
    cout << baxter_dynamics.spatial_jac << endl;

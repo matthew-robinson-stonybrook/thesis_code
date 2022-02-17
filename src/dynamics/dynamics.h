@@ -89,6 +89,7 @@ Robot_Dynamics::Robot_Dynamics(Manip* manip) : manip_ptr{manip} {
    coriolis_matrix.resize(manip_ptr->get_joints(), manip_ptr->get_joints());
    gravity_term.resize(manip_ptr->get_joints(), 1);
    
+   // resize matrices to be respective of joints
    spatial_jac.resize(6, manip_ptr->get_joints());
    spatial_jac_dot.resize(6, manip_ptr->get_joints());
    analytic_jac.resize(6, manip_ptr->get_joints());
@@ -353,6 +354,7 @@ void Robot_Dynamics::calc_gravity_term() {
    }
 }
 
+// sum of link mass * g * link COM height (h)
 void Robot_Dynamics::calc_potential_energy() {
    V = 0;
    double g = 9.81;
@@ -374,6 +376,7 @@ void Robot_Dynamics::calc_potential_energy() {
    } 
 }
 
+// theta_dot^T * M * theta_dot (1/2mv^2)
 void Robot_Dynamics::calc_kinetic_energy() {
    MatrixXd a = (manip_ptr->get_theta_dots().transpose() * mass_matrix * manip_ptr->get_theta_dots());
    T = a(0,0)/2;
@@ -392,7 +395,6 @@ void Robot_Dynamics::forward_kin() {
 void Robot_Dynamics::calc_spatial_jac() {
    vector <Matrix4d> g1_is {linalg::eye4};
    for(int joint {0}; joint < manip_ptr->get_joints(); joint++) {
-      
       double t = manip_ptr->get_thetas()(joint);
       Matrix4d transformation = g::twist(twist_coords.row(joint), t);
       g1_is.push_back(g1_is.at(joint) * transformation);

@@ -31,8 +31,10 @@ int main() {
    baxter_ptr->theta_dots = {pi/40, pi/40, pi/40, pi/40, pi/40, pi/40, pi/40};
    baxter_ptr->theta_dots = {0, 0, 0, 0, 0, 0, 0};
    
+   // Robot dynamics instance using baxter instance pointer
    Robot_Dynamics baxter_dynamics(baxter_ptr);
    
+   // All tests
    baxter_dynamics.calc_spatial_jac();
    baxter_dynamics.calc_spatial_jac_dot();
    baxter_dynamics.calc_analytic_jac();

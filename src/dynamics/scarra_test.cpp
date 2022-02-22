@@ -18,10 +18,13 @@ int main() {
    clock_t tStart = clock();
    
    Three_link *three_ptr = new Three_link();
-   three_ptr->thetas = {pi/4, -pi/4, pi/4};
+   three_ptr->thetas = {pi/4, -pi/2, pi/2};
+   //three_ptr->thetas = {0, 0, 0};
    three_ptr->theta_dots = {pi/16, pi/24, 0};
    
    Robot_Dynamics three_link_dynamics(three_ptr);
+   
+   three_link_dynamics.calc_spatial_jac();
    three_link_dynamics.calc_mass_matrix();
    three_link_dynamics.calc_coriolis_matrix();
    three_link_dynamics.calc_gravity_term();

@@ -74,6 +74,9 @@ class Three_link: public Manip{
          {0,0,l0},
          {0,l1,l0}
       };
+      
+      Matrix<double, 3, 6> twist_coords;
+      
       MatrixXd p_links{
          {0,0,r0},
          {0,r1,l0},
@@ -107,6 +110,8 @@ class Three_link: public Manip{
       // Returns joint configs, vector to joint axes, and vec to link CoM
       virtual MatrixXd get_axis_joints() {return axis_joints;}
       virtual MatrixXd get_q_joints() {return q_joints;}
+      virtual MatrixXd get_twist_coords() {return twist_coords;}
+      
       virtual MatrixXd get_p_links() {return p_links;}
      
       // Return initial end-effector transformation matirx
@@ -120,6 +125,18 @@ class Three_link: public Manip{
 
 Three_link::Three_link() {
    cout << "Three_link Contructor" << endl;
+   Vector3d cross;
+   Vector3d uj;
+   Vector3d qj;
+   int t;
+   
+   for (int joint = 0; joint < joints; joint++) {
+      uj = axis_joints.row(joint);
+      qj = q_joints.row(joint);
+      cross = (-1 * uj).cross(qj);
+      twist_coords(joint, seq(0,2)) = cross;
+      twist_coords(joint, seq(3,5)) = uj;
+   }
 }
 
 MatrixXd Three_link::reference_twist_coords(){

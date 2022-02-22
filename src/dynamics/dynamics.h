@@ -344,13 +344,29 @@ void Robot_Dynamics::calc_gravity_term() {
    // Calculating rows of gravity term
    for(int row {0}; row < joints; row++) {
       sum = {0, 0, 0, 0};
+      cout << "ROW: " << endl;
+      cout << row << endl;
       for(int link {row}; link < joints; link++) {
          Vector4d p = ps.at(link);
          double m = manip_ptr->get_mls().at(link);
          sum += m * p;
+         /*
+         cout << "LINK: " << endl;
+         cout << link << endl;
+         cout << "SUM: " << endl;
+         cout << sum << endl;
+         */
       }
       
-      gravity_term(row) = g.transpose() * twists.at(row) * sum;
+      Matrix<double, 6, 1> twist_p = spatial_jac.col(row);
+      Matrix4d twistp_hat = linalg::twist_skew(twist_p);
+      
+      cout << "Twist Hat: " << endl;
+      cout << twistp_hat << endl;
+      cout << "SUM: " << endl;
+      cout << sum << endl;
+      
+      gravity_term(row) = g.transpose() * twistp_hat * sum;
    }
 }
 

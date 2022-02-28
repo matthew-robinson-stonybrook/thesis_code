@@ -1,4 +1,0 @@
-clc
-clear all
-
-M = readmatrix('02_27_2022RK_V1.csv')

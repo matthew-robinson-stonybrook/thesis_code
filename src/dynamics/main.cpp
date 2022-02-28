@@ -33,21 +33,9 @@ int main() {
    
    // Robot dynamics instance using baxter instance pointer
    Robot_Dynamics baxter_dynamics(baxter_ptr);
-   baxter_dynamics.calc_pre_dynamics();
-   baxter_dynamics.calc_mass_matrix();
-   baxter_dynamics.calc_coriolis_matrix2();
-   /*
-   cout << "Partial M partial T: " << endl;
-   cout << baxter_dynamics.calc_partialM_partialT(2, 4, 6) << endl;
-  cout << "List 2, 4, 6: " << endl;
-   cout << baxter_dynamics.partialM_partialTs(2, 4).at(6) << endl;
-   */
-   cout << "Partial M partial T: " << endl;
-   cout << baxter_dynamics.calc_christoffel(2, 4, 6) << endl;
-  cout << "List 2, 4, 6: " << endl;
-   cout << baxter_dynamics.calc_christoffel2(2, 4, 6) << endl;
-   /*
+
    // All tests
+   baxter_dynamics.calc_pre_dynamics();
    baxter_dynamics.calc_spatial_jac();
    baxter_dynamics.calc_spatial_jac_dot();
    baxter_dynamics.calc_analytic_jac();
@@ -60,14 +48,16 @@ int main() {
    
    // Baxter Impedence Controller
    Controller baxter_ic = Controller(&baxter_dynamics);
-   baxter_ic.calc_control_input();
+   //baxter_ic.calc_control_input();
    
+   /*
    cout << "Control Input: " << endl;
    cout << baxter_ic.y << endl;
    
    cout << "Control Torque: " << endl;
    cout << baxter_ic.u << endl;
    */
+   
    double ellapsed_time_us = ((clock() - tStart) * 1000000) / CLOCKS_PER_SEC;
    if(ellapsed_time_us <= 999) {
       cout << "TIME: " << ellapsed_time_us << "us" << endl;

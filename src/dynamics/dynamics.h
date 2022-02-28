@@ -70,13 +70,8 @@ class Robot_Dynamics {
       double calc_partialM_partialT(const int i, const int j, const int k);
       double calc_christoffel(const int i, const int j, const int k);
       
-      double calc_partialM_partialT2(const int i, const int j, const int k);
-      double calc_christoffel2(const int i, const int j, const int k);
-      
       void calc_mass_matrix();
-      void calc_mass_matrix2();
       void calc_coriolis_matrix();
-      void calc_coriolis_matrix2();
       void calc_gravity_term();
       
       void calc_potential_energy();
@@ -245,8 +240,8 @@ void Robot_Dynamics::calc_pre_dynamics() {
          // Clear vector of partial mass derivatives here
          partialM_partialTs(row,col).clear();
          // Calculate partial mass derivatives of each joint 
-         for(int j{0}; j < js; j++) {
-            double Mij_k = calc_partialM_partialT(row, col, j);
+         for(int k{0}; k < js; k++) {
+            double Mij_k = calc_partialM_partialT(row, col, k);
             partialM_partialTs(row, col).push_back(Mij_k);
          }
       }
@@ -264,8 +259,6 @@ void Robot_Dynamics::calc_mass_matrix() {
          mass_matrix(row,col) = 0;
       }
    }
-   
-   
    
    double m;
    Matrix3d I;
@@ -285,9 +278,9 @@ void Robot_Dynamics::calc_mass_matrix() {
             adjusted_gmass = link_adjusted_gmasss.at(l);
             
             Matrix<double, 6, 1> twist_i = twist_coords.row(row);
-            Matrix<double, 6, 6> adj_li = calc_adjoint_ij(l, row);
+            Matrix<double, 6, 6> adj_li = adjoint_ijs.at(l).at(row);
             Matrix<double, 6, 1> twist_j = twist_coords.row(col);
-            Matrix<double, 6, 6> adj_lj = calc_adjoint_ij(l, col);
+            Matrix<double, 6, 6> adj_lj = adjoint_ijs.at(l).at(col);
             
             val += twist_i.transpose() * adj_li.transpose() * adjusted_gmass * adj_lj * twist_j;
          }
@@ -311,44 +304,8 @@ double Robot_Dynamics::calc_partialM_partialT(const int i, const int j, const in
       Matrix<double, 6, 6> adjusted_gmass = link_adjusted_gmasss.at(l);
       
       // Adjoints li, lj, lk
-      Matrix<double, 6, 6> adj_li = calc_adjoint_ij(l, i);
-      Matrix<double, 6, 6> adj_lj = calc_adjoint_ij(l, j);
-      Matrix<double, 6, 6> adj_lk = calc_adjoint_ij(l, k);
-      
-      // Adjointki
-      Matrix<double, 6, 6> adj_ki = calc_adjoint_ij(k, i);
-      // Adjointkj
-      Matrix<double, 6, 6> adj_kj = calc_adjoint_ij(k, j);
-      
-      // Lie bracket twist coord [A(k-1)i * ei, ek]  
-      Matrix<double,6,1> twist_lie1 = g::lie_bracket(adj_ki * twisti, twistk);
-      // Lie bracket twist coord [A(k-1)j * ej, ek]  
-      Matrix<double,6,1> twist_lie2 = g::lie_bracket(adj_kj* twistj, twistk);
-      
-      partialM += twist_lie1.transpose() * adj_lk.transpose() * adjusted_gmass * adj_lj * twistj;
-      partialM += twisti.transpose() * adj_li.transpose() * adjusted_gmass * adj_lk * twist_lie2;
-   }
-   
-   return partialM;
-}
-
-// Should (probably) only be run in calc_coriolis_matrix()
-double Robot_Dynamics::calc_partialM_partialT2(const int i, const int j, const int k) {
-   double partialM {0};
-   const int js {manip_ptr->get_joints()};
-   
-   // Define three base twist coordinates
-   Matrix<double,6,1> twisti = twist_coords.row(i);
-   Matrix<double,6,1> twistj = twist_coords.row(j);
-   Matrix<double,6,1> twistk = twist_coords.row(k);
-   
-   for(int l{max(i,j)}; l < js; l++) {
-      // Adjusted mass matrix l
-      Matrix<double, 6, 6> adjusted_gmass = link_adjusted_gmasss.at(l);
-      
-      // Adjoints li, lj, lk
       Matrix<double, 6, 6> adj_li = adjoint_ijs.at(l).at(i);
-      Matrix<double, 6, 6> adj_lj = adjoint_ijs.at(l).at(l);
+      Matrix<double, 6, 6> adj_lj = adjoint_ijs.at(l).at(j);
       Matrix<double, 6, 6> adj_lk = adjoint_ijs.at(l).at(k);
       
       // Adjointki
@@ -368,18 +325,8 @@ double Robot_Dynamics::calc_partialM_partialT2(const int i, const int j, const i
    return partialM;
 }
 
-// Should (probably) only be run in calc_coriolis_matrix()
-double Robot_Dynamics::calc_christoffel(const int i, const int j, const int k) {
-   // Mij_k: Partial derivative or mass matrix element ij wrt to theta k
-   double Mij_k = calc_partialM_partialT(i, j, k);
-   double Mik_j = calc_partialM_partialT(i, k, j);
-   double Mkj_i = calc_partialM_partialT(k, j, i);
-   
-   double christoffel = 0.5 * (Mij_k + Mik_j - Mkj_i);
-   return christoffel;
-}
 
-double Robot_Dynamics::calc_christoffel2(const int i, const int j, const int k) {
+double Robot_Dynamics::calc_christoffel(const int i, const int j, const int k) {
    // Mij_k: Partial derivative or mass matrix element ij wrt to theta k
    double Mij_k = partialM_partialTs(i, j).at(k);
    double Mik_j = partialM_partialTs(i, k).at(j);
@@ -389,31 +336,7 @@ double Robot_Dynamics::calc_christoffel2(const int i, const int j, const int k) 
    return christoffel;
 }
 
-// Coriolis Matrix
 void Robot_Dynamics::calc_coriolis_matrix() {
-   const int js {manip_ptr->get_joints()};
-   
-   // Zero out
-   for(int row{0}; row < js; row++) {
-      for(int col{0}; col < js; col++) {
-         coriolis_matrix(row,col) = 0;
-      }
-   }
-   
-   for(int row{0}; row < js; row++) {
-      for(int col{0}; col < js; col++) {
-         double sum = 0;
-         for(int k{0}; k < js; k++) {
-            double theta_dot_k = manip_ptr->get_theta_dots()(k);
-            double christoffel_ijk = calc_christoffel(row, col, k);
-            sum += christoffel_ijk * theta_dot_k;
-         }
-         coriolis_matrix(row, col) = sum;
-      }
-   }
-}
-
-void Robot_Dynamics::calc_coriolis_matrix2() {
    const int js {manip_ptr->get_joints()};
    
    // Zero out coriolis matrix
@@ -429,7 +352,7 @@ void Robot_Dynamics::calc_coriolis_matrix2() {
          double sum = 0;
          for(int k{0}; k < js; k++) {
             double theta_dot_k = manip_ptr->get_theta_dots()(k);
-            double christoffel_ijk = calc_christoffel2(row, col, k);
+            double christoffel_ijk = calc_christoffel(row, col, k);
             sum += christoffel_ijk * theta_dot_k;
          }
          coriolis_matrix(row, col) = sum;
@@ -466,27 +389,14 @@ void Robot_Dynamics::calc_gravity_term() {
    // Calculating rows of gravity term
    for(int row {0}; row < joints; row++) {
       sum = {0, 0, 0, 0};
-      cout << "ROW: " << endl;
-      cout << row << endl;
       for(int link {row}; link < joints; link++) {
          Vector4d p = ps.at(link);
          double m = manip_ptr->get_mls().at(link);
          sum += m * p;
-         /*
-         cout << "LINK: " << endl;
-         cout << link << endl;
-         cout << "SUM: " << endl;
-         cout << sum << endl;
-         */
       }
       
       Matrix<double, 6, 1> twist_p = spatial_jac.col(row);
       Matrix4d twistp_hat = linalg::twist_skew(twist_p);
-      
-      cout << "Twist Hat: " << endl;
-      cout << twistp_hat << endl;
-      cout << "SUM: " << endl;
-      cout << sum << endl;
       
       gravity_term(row) = g.transpose() * twistp_hat * sum;
    }
@@ -547,8 +457,6 @@ void Robot_Dynamics::calc_spatial_jac() {
 void Robot_Dynamics::calc_spatial_jac_dot() {
    calc_spatial_jac();
    MatrixXd t_dot = manip_ptr->get_theta_dots();
-   cout << "Theta Dot: " << endl;
-   cout << t_dot << endl;
    Matrix<double, 6, 1> sum;
    for(int col{0}; col < joints; col++) {
       sum = {0, 0, 0, 0, 0, 0};

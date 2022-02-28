@@ -46,6 +46,9 @@ int main() {
    baxter_dynamics.calc_kinetic_energy();
    baxter_ptr->set_joint_path(baxter_to_handle_csv);
    
+   cout << "G: " << endl;
+   cout << baxter_dynamics.gravity_term << endl;
+   
    // Baxter Impedence Controller
    Controller baxter_ic = Controller(&baxter_dynamics);
    //baxter_ic.calc_control_input();

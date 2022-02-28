@@ -364,6 +364,8 @@ void Robot_Dynamics::calc_gravity_term() {
    Vector4d g {0, 0, 9.81, 0};
    vector <Matrix4d> g1_is {linalg::eye4};
    
+   calc_spatial_jac();
+   
    // Vector of adjusted link positions to be calculated next
    vector <Vector4d> ps {};
    // Vector of adjusted twists to be calculated next

@@ -12,7 +12,7 @@ echo " "
 if [ $x == "y" ] 
 then
    echo "! ! ! ! ! GIT USERNAME AND TOKEN FOR AUTHENTICATION ! ! ! ! !"
-   echo "! ! ! ! ! GIT TOKEN EXPIRED 1/22/2022 ! ! ! ! !"
+   echo "! ! ! ! ! GIT TOKEN EXPIRED 5/27/2022 ! ! ! ! !"
    echo "Git username: matthew-robinson-stonybrook"
    echo "Git Token (for password): ${git_token}"
    echo " "

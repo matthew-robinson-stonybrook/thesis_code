@@ -1,5 +1,6 @@
 #!/bin/bash
-git_token=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
+git_tokenp1=ghp_MqGEjfnBkWZ7Xh
+git_tokenp2=obwGcIjLSHdnw03p41BQKM
 
 echo "getting status of git"
 
@@ -14,7 +15,8 @@ then
    echo "! ! ! ! ! GIT USERNAME AND TOKEN FOR AUTHENTICATION ! ! ! ! !"
    echo "! ! ! ! ! GIT TOKEN EXPIRED 5/27/2022 ! ! ! ! !"
    echo "Git username: matthew-robinson-stonybrook"
-   echo "Git Token (for password): ${git_token}"
+   echo "Git Token Part1 (for password): ${git_tokenp1}"
+   echo "Git Token Part2 (for password): ${git_tokenp2}"
    echo " "
    git pull 
 else

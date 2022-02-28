@@ -18,7 +18,7 @@ int main() {
    clock_t tStart = clock();
    
    Three_link *three_ptr = new Three_link();
-   three_ptr->thetas = {pi/4, -pi/2, pi/2};
+   three_ptr->thetas = {pi/4, -pi/8, pi/4};
    //three_ptr->thetas = {0, 0, 0};
    three_ptr->theta_dots = {pi/16, pi/24, 0};
    
@@ -36,12 +36,15 @@ int main() {
    cout << "Calculated Scarra Grav Term (Robot_Dynamics): " << endl;
    cout << three_link_dynamics.gravity_term << endl;
    
-   double ellapsed_us = ((clock() - tStart) * 1000000) / CLOCKS_PER_SEC;
-   if(ellapsed_us <= 999999) {
-      cout << "TIME: " << ellapsed_us << "s e-6" << endl;
+   double ellapsed_time_us = ((clock() - tStart) * 1000000) / CLOCKS_PER_SEC;
+   if(ellapsed_time_us <= 999) {
+      cout << "TIME: " << ellapsed_time_us << "us" << endl;
    }
-   else {
-      cout << "TIME: " << ellapsed_us/1000 << "s e-3" << endl;
+   if(ellapsed_time_us > 999 && ellapsed_time_us <= 999999) {
+      cout << "TIME: " << ellapsed_time_us / 1000 << "ms" << endl;
    }
-   return 0;      
+   if(ellapsed_time_us > 999999) {
+      cout << "TIME: " << ellapsed_time_us / 1000000 << "s" << endl;
+   }
+   return 0;    
 }

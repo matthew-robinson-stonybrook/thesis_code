@@ -1,0 +1,4 @@
+V1: 
+ONLY Mass and Coriolis matrix used
+time step (h) = 0.005s
+total time = 2s

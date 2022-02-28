@@ -27,13 +27,26 @@ int main() {
    // Define the baxter object, the 7 joint angle values for testing
    Baxter *baxter_ptr = new Baxter();
    baxter_ptr->thetas = {pi/2, -pi/8, pi/4, -pi/6, 0.1, 0.1, 0.1};
-   baxter_ptr->thetas = {0, 0, 0, 0, 0, 0, 0};
+   //baxter_ptr->thetas = {0, 0, 0, 0, 0, 0, 0};
    baxter_ptr->theta_dots = {pi/40, pi/40, pi/40, pi/40, pi/40, pi/40, pi/40};
-   baxter_ptr->theta_dots = {0, 0, 0, 0, 0, 0, 0};
+   //baxter_ptr->theta_dots = {0, 0, 0, 0, 0, 0, 0};
    
    // Robot dynamics instance using baxter instance pointer
    Robot_Dynamics baxter_dynamics(baxter_ptr);
-   
+   baxter_dynamics.calc_pre_dynamics();
+   baxter_dynamics.calc_mass_matrix();
+   baxter_dynamics.calc_coriolis_matrix2();
+   /*
+   cout << "Partial M partial T: " << endl;
+   cout << baxter_dynamics.calc_partialM_partialT(2, 4, 6) << endl;
+  cout << "List 2, 4, 6: " << endl;
+   cout << baxter_dynamics.partialM_partialTs(2, 4).at(6) << endl;
+   */
+   cout << "Partial M partial T: " << endl;
+   cout << baxter_dynamics.calc_christoffel(2, 4, 6) << endl;
+  cout << "List 2, 4, 6: " << endl;
+   cout << baxter_dynamics.calc_christoffel2(2, 4, 6) << endl;
+   /*
    // All tests
    baxter_dynamics.calc_spatial_jac();
    baxter_dynamics.calc_spatial_jac_dot();
@@ -54,21 +67,7 @@ int main() {
    
    cout << "Control Torque: " << endl;
    cout << baxter_ic.u << endl;
-   /*
-   cout << "Spatial: " << endl;
-   cout << baxter_dynamics.spatial_jac << endl;
-   cout << "Analytic: " << endl;
-   cout << baxter_dynamics.analytic_jac << endl;
-   cout << "Spatial Dot: " << endl;
-   cout << baxter_dynamics.spatial_jac_dot << endl;
-   Matrix<double, 6, 1> vs = baxter_dynamics.spatial_jac * baxter_ptr->theta_dots;
-   Matrix<double, 6, 1> va = baxter_dynamics.analytic_jac * baxter_ptr->theta_dots;
-   cout << "Spatial Vel" << endl;
-   cout << vs << endl;
-   cout << "Analytic vel" << endl;
-   cout << va << endl;
-   */ 
-   
+   */
    double ellapsed_time_us = ((clock() - tStart) * 1000000) / CLOCKS_PER_SEC;
    if(ellapsed_time_us <= 999) {
       cout << "TIME: " << ellapsed_time_us << "us" << endl;

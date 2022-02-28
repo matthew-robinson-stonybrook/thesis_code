@@ -234,8 +234,7 @@ Vector3d Three_link::reference_gravity_term() {
    double g = 9.81;
    
    double g1 = 0;
-   double g2 = -g * ((m2 * r1 + m3 * (l1+r2)) * cos(t2) + m3 * r2 * cos(t2 + t3));
-   //double g2 = -(m2*g*r1+m3*g*l1)*cos(t2) - m3*r2*cos(t2+t3);
+   double g2 = -g * m2 * r1 * cos(t2) - g * m3 * (l1 * cos(t2) + r2 * cos(t2 + t3));
    double g3 = -m3*g*r2*cos(t2+t3);
    
    Vector3d gravity_term {g1, g2, g3};

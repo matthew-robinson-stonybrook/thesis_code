@@ -1,6 +1,10 @@
 #!/bin/bash
+<<<<<<< HEAD
 git_tokenp1=ghp_MqGEjfnBkWZ7Xh
 git_tokenp2=obwGcIjLSHdnw03p41BQKM
+=======
+git_token=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
+>>>>>>> bf10960e7cbba9c8c68522a51e48143f5fb06f43
 
 echo "getting status of git"
 

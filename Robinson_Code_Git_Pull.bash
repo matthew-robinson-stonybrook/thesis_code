@@ -1,5 +1,5 @@
 #!/bin/bash
-git_token=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
+git_token=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
 
 echo "getting status of git"
 

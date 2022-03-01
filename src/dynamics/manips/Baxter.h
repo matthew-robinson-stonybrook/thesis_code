@@ -235,7 +235,6 @@ Baxter::Baxter(){
       twist_coords(joint, seq(3,5)) = uj;
    }
    
-   
 };
 
 void Baxter::set_joint_path(string file_name) {

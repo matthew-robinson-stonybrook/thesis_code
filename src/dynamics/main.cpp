@@ -35,6 +35,7 @@ int main() {
    Robot_Dynamics baxter_dynamics(baxter_ptr);
 
    // All tests
+   /*
    baxter_dynamics.calc_pre_dynamics();
    baxter_dynamics.calc_spatial_jac();
    baxter_dynamics.calc_spatial_jac_dot();
@@ -44,22 +45,21 @@ int main() {
    baxter_dynamics.calc_gravity_term();
    baxter_dynamics.calc_potential_energy();
    baxter_dynamics.calc_kinetic_energy();
-   baxter_ptr->set_joint_path(baxter_to_handle_csv);
-   
-   cout << "G: " << endl;
-   cout << baxter_dynamics.gravity_term << endl;
+   //baxter_ptr->set_joint_path(baxter_to_handle_csv);
+   */
    
    // Baxter Impedence Controller
    Controller baxter_ic = Controller(&baxter_dynamics);
-   //baxter_ic.calc_control_input();
+   baxter_ic.calc_control_input();
+   baxter_ic.calc_control_torque();
    
-   /*
+   
    cout << "Control Input: " << endl;
    cout << baxter_ic.y << endl;
    
    cout << "Control Torque: " << endl;
    cout << baxter_ic.u << endl;
-   */
+   
    
    double ellapsed_time_us = ((clock() - tStart) * 1000000) / CLOCKS_PER_SEC;
    if(ellapsed_time_us <= 999) {

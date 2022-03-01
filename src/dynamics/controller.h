@@ -101,12 +101,17 @@ void Controller::calc_control_input() {
 }
 
 
-// Make sure to calculate dynamics matrices and terms first
 void Controller::calc_control_torque() {
+   dynamics_ptr->calc_pre_dynamics();
+   dynamics_ptr->calc_mass_matrix();
+   dynamics_ptr->calc_coriolis_matrix();
+   dynamics_ptr->calc_gravity_term();
+   dynamics_ptr->calc_analytic_jac();
+   
    MatrixXd B = dynamics_ptr->mass_matrix;
    MatrixXd C = dynamics_ptr->coriolis_matrix;
    MatrixXd G = dynamics_ptr->gravity_term;
-   MatrixXd J = dynamics_ptr->spatial_jac;
+   MatrixXd J = dynamics_ptr->analytic_jac;
    
    u = B * y + C * manip_ptr->get_theta_dots() + G + J.transpose() * he;
 }

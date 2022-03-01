@@ -455,7 +455,7 @@ void Robot_Dynamics::calc_spatial_jac() {
    }
 }
 
-
+// I have a document of this derivation in Thesis folder on google drive
 void Robot_Dynamics::calc_spatial_jac_dot() {
    calc_spatial_jac();
    MatrixXd t_dot = manip_ptr->get_theta_dots();
@@ -483,12 +483,14 @@ void Robot_Dynamics::calc_spatial_jac_dot() {
    }
 }
 
+
 void Robot_Dynamics::calc_analytic_jac() {
    calc_spatial_jac();
    calc_A();
    analytic_jac = A * spatial_jac;
 }
 
+// A and A_dot is not complete so neither is this
 void Robot_Dynamics::calc_analytic_jac_dot() {
    calc_spatial_jac();
    calc_spatial_jac_dot();
@@ -497,10 +499,12 @@ void Robot_Dynamics::calc_analytic_jac_dot() {
    analytic_jac_dot = A_dot * spatial_jac + A * spatial_jac_dot;
 }
 
+// Requires analytic jacobian to be calculated (obviously)
 void Robot_Dynamics::calc_analytic_jac_pseudo_inv() {
-   analytic_jac_pseudo_inv = spatial_jac.transpose() * ((spatial_jac * spatial_jac.transpose()).inverse());
+   analytic_jac_pseudo_inv = analytic_jac.transpose() * ((analytic_jac * analytic_jac.transpose()).inverse());
 }
 
+// Not complete? Needs resprentation jacobian?
 void Robot_Dynamics::calc_A() {
    forward_kin();
    Vector3d p = ge(seq(0,2), 3);
@@ -509,6 +513,8 @@ void Robot_Dynamics::calc_A() {
    A(seq(0,2), seq(3,5)) = -p_hat; 
 }
 
+// Not Complete...
+// Need representation jacobian derivative
 void Robot_Dynamics::calc_A_dot() {
    MatrixXd t_dot = manip_ptr->get_theta_dots();
    Matrix<double, 6, 1> va = analytic_jac * t_dot;

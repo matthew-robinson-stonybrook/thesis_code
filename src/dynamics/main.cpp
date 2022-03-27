@@ -33,7 +33,7 @@ int main() {
    
    // Robot dynamics instance using baxter instance pointer
    Robot_Dynamics baxter_dynamics(baxter_ptr);
-
+   
    // All tests
    /*
    baxter_dynamics.calc_pre_dynamics();
@@ -53,12 +53,23 @@ int main() {
    baxter_ic.calc_control_input();
    baxter_ic.calc_control_torque();
    
-   
+   /*
    cout << "Control Input: " << endl;
    cout << baxter_ic.y << endl;
    
    cout << "Control Torque: " << endl;
    cout << baxter_ic.u << endl;
+   */
+   
+   // Test
+   array<int, 16> a {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
+
+   Matrix4i new_m = Map<Matrix4i>(a.data());
+   
+   cout << "ARRAY: " << endl;
+   cout << *array << *(array + 1) << *(array + 2) << endl;
+   cout << "NEW MATRIX: " << endl;
+   cout << new_m << endl;
    
    
    double ellapsed_time_us = ((clock() - tStart) * 1000000) / CLOCKS_PER_SEC;
